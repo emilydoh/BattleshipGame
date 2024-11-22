@@ -1,6 +1,6 @@
 package main;
 
-enum ShipType {
+public enum ShipType {
     AIRCRAFT_CARRIER,
     BATTLESHIP,
     DESTROYER,

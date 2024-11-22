@@ -47,21 +47,42 @@ public class Coordinate {
         this.playerShip = playerShip;
     }
 
+    // two coordinates are equal if their x, y are equal
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Coordinate)) {
+            return false;
+        }
+        Coordinate c = (Coordinate) o;
+        return ((x == c.x) && (y == c.y));
+    }
+
     public boolean hasBeenChecked() {
         return hasBeenChecked;
     }
 
-    public void updateHasBeenChecked() {
+    // returns true if we sunk a ship
+    public boolean updateHasBeenChecked() {
         hasBeenChecked = true;
+        // check if we sunk a ship
+        if (containsShip) {
+            if (ship.decrementRemainingSquaresCount()) { // it sunk a ship
+                //************** WE NEED TO UPDATE THE REST OF THE COORDINATES AS SUNK ? **********
+                containsSunkShip = true;
+                return true;
+            }
+            else { // no ship was sunk
+                return false;
+            }
+        }
+        return false;
     }
 
     public void setContainsSunkShip() {
         containsSunkShip = true;
-    }
-
-    // called when user checks a coordinate so we can easily tell if user shouldn't be able to hit again
-    public void checkCoordinate() {
-        hasBeenChecked = true;
     }
 
     public boolean containsShip() {
@@ -78,6 +99,7 @@ public class Coordinate {
     }
     public int getX() { return x; }
     public int getY() { return y; }
+    public boolean containsSunkShip() { return containsSunkShip; }
 
     /* draw coordinate rectangle based on its current state:
         1) not yet checked -> draw nothing

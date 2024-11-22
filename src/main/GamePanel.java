@@ -2,10 +2,9 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 
 
@@ -22,6 +21,9 @@ public class GamePanel extends JPanel implements Runnable {
     public int gameStage;
     public final int placeShipsGameStage = 0;
     public final int attackGameStage = 1;
+
+    public static final int vertical = 0;
+    public static final int horizontal = 1;
 
     Thread gameThread;
     PlaceShipsBoard board = new PlaceShipsBoard();
@@ -40,6 +42,8 @@ public class GamePanel extends JPanel implements Runnable {
     Game game = new Game(playerBoard, opponentsBoard);
     Coordinate[][] opponentCoordGrid;
     Coordinate[][] playerCoordGrid;
+
+    int[][] containsShipGrid; // used to make sure ships don't overlap when user places ships
 
     JFrame gameWindow;
 
@@ -64,6 +68,8 @@ public class GamePanel extends JPanel implements Runnable {
         currentlySelectedShip = shipsToBePlaced.pop();
         alreadyPlacedShips.add(currentlySelectedShip);
 
+        containsShipGrid = new int[board.MAX_ROWS][board.MAX_COLUMNS];
+
         addMouseMotionListener(mouse);
         addMouseListener(mouse);
 
@@ -83,13 +89,26 @@ public class GamePanel extends JPanel implements Runnable {
             finishPlacingShipButton = new JButton("Finished placing");
             finishPlacingShipButton.addActionListener(e -> {
                 if (!shipsToBePlaced.isEmpty()) {
-                    currentlySelectedShip = shipsToBePlaced.pop();
-                    alreadyPlacedShips.add(currentlySelectedShip);
+                    // button does nothing if ship is in an invalid placement overlapping other ships
+                    if (game.isShipPlacementValid(currentlySelectedShip.getXCoordinate(), currentlySelectedShip.getYCoordinate(), currentlySelectedShip.getOrientation(), currentlySelectedShip.getShipSize(), containsShipGrid)) {
+                        // *** *************** TEST MAKE SURE VERT IS CORRECT ************ ***
+                        if (currentlySelectedShip.getOrientation()==GamePanel.vertical) {
+                            for (int i = 0; i < currentlySelectedShip.getShipSize(); i++) {
+                                containsShipGrid[currentlySelectedShip.getYCoordinate()+i][currentlySelectedShip.getXCoordinate()] = 1;
+                            }
+                        }
+                        else {
+                            for (int i = 0; i < currentlySelectedShip.getShipSize(); i++) {
+                                containsShipGrid[currentlySelectedShip.getYCoordinate()][currentlySelectedShip.getXCoordinate()+i] = 1;
+                            }
+                        }
+                        System.out.println("Test " + Arrays.deepToString(containsShipGrid));
+                        currentlySelectedShip = shipsToBePlaced.pop();
+                        alreadyPlacedShips.add(currentlySelectedShip);
+                    }
                 } else {
                     // transition to attack mode
                     gameStage = attackGameStage;
-                    // ************* TO DO : FOR PLAYER BOARD WE NEED TO PASS IN OUR RANDOMIZED SHIPS ******************
-
                     // pass in already placed ships to the Game object, it returns attack mode ships for player and opponenet.
                     game.start(alreadyPlacedShips);
 
@@ -147,10 +166,11 @@ public class GamePanel extends JPanel implements Runnable {
             int mouseXPosition = mouse.x;
             int mouseYPosition = mouse.y;
 
-            // subtract off half square size to center pointer on ship
-            currentlySelectedShip.changePosition(mouseXPosition-board.HALF_SQUARE_SIZE, mouseYPosition-board.HALF_SQUARE_SIZE);
-            // ~~~~~~~~~~~~~~~~~~~~ IMPLEMENT CHECK FOR IN BOUNDS ~~~~~~~~~~~~~~~~~~
-
+            // make sure entire ship will be in bounds of board
+            if (board.checkShipPlacementInBounds(mouseXPosition, mouseYPosition, currentlySelectedShip.getOrientation(),currentlySelectedShip.getShipSize())) {
+                // subtract off half square size to center pointer on ship
+                currentlySelectedShip.changePosition(mouseXPosition - board.HALF_SQUARE_SIZE, mouseYPosition - board.HALF_SQUARE_SIZE);
+            }
         }
 
         // in attack mode if its the users turn
@@ -160,15 +180,16 @@ public class GamePanel extends JPanel implements Runnable {
             int y = playerBoard.getYCoordFromPositionOnGrid(mouse.y);
 
             if (game.isGuessValid(x, y)) {
-//                System.out.print("valid guess!");
                 game.makePlayerTurn(x, y);
                 opponentCoordGrid = game.getOpponentCoordinateGrid();
                 playerCoordGrid = game.getPlayerCoordinateGrid();
 
-//                playerTurn = 1;
+                playerTurn = game.getCurrentTurn();
                 // THEN AFTER THIS WE NEED TO CALL OPPONENTS TURN AND MAKE SURE IT GETS UPDATED
-
-//                playerTurn = 0;
+                game.makeCPUTurn();
+                opponentCoordGrid = game.getOpponentCoordinateGrid();
+                playerCoordGrid = game.getPlayerCoordinateGrid();
+                playerTurn = game.getCurrentTurn();
             }
         }
 

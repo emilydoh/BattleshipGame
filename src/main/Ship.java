@@ -1,18 +1,20 @@
 package main;
-
 import java.awt.*;
 import java.util.HashMap;
 
 public class Ship {
-    private ShipType shipType;
+    public ShipType shipType;
     public int shipSize;
-    private String orientation;
+    private int orientation;
 
     public int SQUARE_SIZE;
     public int HALF_SQUARE_SIZE;
     // offset used to position ships on attack mode boards
     // THIS IS BECOMING PROBLEMATIC, BECAUSE IN THE MAIN CLASS, WE HAVE A LIST OF SHIPS TO BE PLACED WITH NO BOOLEAN IN THE CONSTRUCTOR
     public int offset;
+
+    final int MAX_COLUMNS = 9;
+    final int MAX_ROWS = 9;
 
 
     // coordinate in array
@@ -48,7 +50,7 @@ public class Ship {
         this.shipSize = shipTypeToShipSizeMap.get(shipType);
 
         // default orientation is vertical
-        this.orientation = "vertical";
+        this.orientation = GamePanel.vertical;
 
         //default position in array is 0, 0
         this.xCoordinate=0;
@@ -60,7 +62,7 @@ public class Ship {
 
 
     // constructor for AttackModeShips
-    public Ship(ShipType shipType, int playerNum, String orientation, int xCoordinate, int yCoordinate) {
+    public Ship(ShipType shipType, int playerNum, int orientation, int xCoordinate, int yCoordinate) {
 
         // ****************************
         SQUARE_SIZE = 75;
@@ -102,16 +104,16 @@ public class Ship {
         return shipSize;
     }
 
-    public String getOrientation() {
+    public int getOrientation() {
         return orientation;
     }
 
     public void changeOrientation() {
-        if (orientation.equals("vertical")) {
-            orientation = "horizontal";
+        if (orientation==GamePanel.vertical) {
+            orientation = GamePanel.horizontal;
         }
         else {
-            orientation = "vertical";
+            orientation = GamePanel.vertical;
         }
     }
 
@@ -127,6 +129,8 @@ public class Ship {
         this.xCoordinate = getXCoordFromPositionOnGrid(xpos);
         this.yCoordinate = getYCoordFromPositionOnGrid(ypos);
 
+        System.out.println("(X: " + xCoordinate + " Y: " + yCoordinate + ")");
+
         this.xPosition = getXPositionOnGrid(xCoordinate);
         this.yPosition = getYPositionOnGrid(yCoordinate);
 
@@ -141,7 +145,7 @@ public class Ship {
 
     /* ################### does not work with attack ships - use attack ship board method ############################# */
     public int getXCoordFromPositionOnGrid(int xPos) {
-        return ((xPos + HALF_SQUARE_SIZE) / SQUARE_SIZE);
+        return (xPos + HALF_SQUARE_SIZE) / SQUARE_SIZE;
     }
 
     public int getYCoordFromPositionOnGrid(int yPos) {
@@ -160,7 +164,7 @@ public class Ship {
 
 //        System.out.print("plain ship draw ");
 
-        if(orientation.equals("vertical")) {
+        if(orientation==GamePanel.vertical) {
             // params are x, y, width, height
             g2.fillRect(xPosition + offset, yPosition, SQUARE_SIZE, shipSize*SQUARE_SIZE);
         }

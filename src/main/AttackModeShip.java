@@ -5,13 +5,13 @@ public class AttackModeShip extends Ship {
     private int remainingSquaresCount;
     private boolean isSunk;
 
-    public AttackModeShip(ShipType shipType, int playerNum, String orientation, int xCoordinate, int yCoordinate) {
+    public AttackModeShip(ShipType shipType, int playerNum, int orientation, int xCoordinate, int yCoordinate) {
         super(shipType, playerNum, orientation, xCoordinate, yCoordinate);
         isSunk = false;
         // initialize and fill array of coordinates
         coordinateArray = new Coordinate[shipSize];
         if (playerNum == 0) {
-            if (orientation.equals("vertical")) {
+            if (orientation==GamePanel.vertical) {
                 for (int i=0; i<shipSize; i ++) {
                     coordinateArray[i] = new Coordinate(xCoordinate, yCoordinate+i, xCoordinate * SQUARE_SIZE + offset, (yCoordinate+i) * SQUARE_SIZE, this, false);
                 }
@@ -23,7 +23,7 @@ public class AttackModeShip extends Ship {
             }
         }
         else {
-            if (orientation.equals("vertical")) {
+            if (orientation==GamePanel.vertical) {
                 for (int i=0; i<shipSize; i ++) {
                     coordinateArray[i] = new Coordinate(xCoordinate, yCoordinate+i, xCoordinate * SQUARE_SIZE + offset, (yCoordinate+i) * SQUARE_SIZE, this, true);
                 }
