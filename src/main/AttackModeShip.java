@@ -42,7 +42,7 @@ public class AttackModeShip extends Ship {
     }
 
 
-    /********8 ISSUE IS THAT WE CAN'T INDEX BY X, Y SINCE WE DIDN'T DO THAT WE NEED TO ITERATE THROUGH ALL AND MANUALLY SET IT *********/
+    /******** ISSUE IS THAT WE CAN'T INDEX BY X, Y SINCE WE DIDN'T DO THAT WE NEED TO ITERATE THROUGH ALL AND MANUALLY SET IT *********/
     public void setCoordinateArrayAsChecked(int x, int y) {
         for (Coordinate c : coordinateArray) {
             if (c.getX() == x && c.getY()==y) {
