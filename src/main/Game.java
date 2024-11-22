@@ -178,8 +178,10 @@ public class Game {
     }
 
 
-    //******************* I THINK THIS QORKED W CPU BUT NOW DOESNT WORK WE NEED TO FLIP X AND Y
-    // this method checks if a ship placement is valid
+    /*
+     this method is used in placeRandomShips when placing random ships for bot player
+     checks if a ship placement is valid in terms of 1) in bounds of grid 2) not overlapping
+     */
     public boolean isShipPlacementValid(int x, int y, int orientation, int size, int[][] boardSquaresOccupied) {
         // vertical
         if (orientation==GamePanel.vertical) {
@@ -189,7 +191,6 @@ public class Game {
             }
             // check all spots are unoccupied
             for (int i = 0; i < size; i++) {
-                System.out.println("vertical: x: " + x + ", y: " + y + " + i: " + i);
                 if (boardSquaresOccupied[x][y+i] != 0) {
                     return false;
                 }
@@ -203,7 +204,7 @@ public class Game {
             }
             // check all spots are unoccupied
             for (int i = 0; i < size; i++) {
-                System.out.println("horizontal: " + x + " + i: " + i + ", y: " + y);
+//                System.out.println("horizontal: " + x + " + i: " + i + ", y: " + y);
                 if (boardSquaresOccupied[x+i][y] != 0) {
                     return false;
                 }

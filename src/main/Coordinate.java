@@ -70,7 +70,7 @@ public class Coordinate {
         // check if we sunk a ship
         if (containsShip) {
             if (ship.decrementRemainingSquaresCount()) { // it sunk a ship
-                //************** WE NEED TO UPDATE THE REST OF THE COORDINATES AS SUNK ? **********
+                //************** WE NEED TO UPDATE THE REST OF THE COORDINATES AS SUNK **********
                 containsSunkShip = true;
                 return true;
             }

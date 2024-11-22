@@ -117,11 +117,11 @@ public class Ship {
         }
     }
 
+    /*
+    * this method is used to update position of the ship
+    * before this method is called, make sure position is valid
+    * */
     public void changePosition(int xpos, int ypos) {
-
-        /**************************************************************
-         need to make sure we are in a valid position before doing this
-         */
 
         this.xPosition = xpos;
         this.yPosition = ypos;
@@ -143,7 +143,7 @@ public class Ship {
         return row * SQUARE_SIZE;
     }
 
-    /* ################### does not work with attack ships - use attack ship board method ############################# */
+    /* this method does not work with attack ships - use attack ship board method instead */
     public int getXCoordFromPositionOnGrid(int xPos) {
         return (xPos + HALF_SQUARE_SIZE) / SQUARE_SIZE;
     }

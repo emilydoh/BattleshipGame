@@ -89,11 +89,11 @@ public class GamePanel extends JPanel implements Runnable {
             finishPlacingShipButton = new JButton("Finished placing");
             finishPlacingShipButton.addActionListener(e -> {
                 if (!shipsToBePlaced.isEmpty()) {
-                    // button does nothing if ship is in an invalid placement overlapping other ships
-                    if (game.isShipPlacementValid(currentlySelectedShip.getXCoordinate(), currentlySelectedShip.getYCoordinate(), currentlySelectedShip.getOrientation(), currentlySelectedShip.getShipSize(), containsShipGrid)) {
-                        // *** *************** TEST MAKE SURE VERT IS CORRECT ************ ***
+                    // button should not place the ship if placing it would overlap other ships
+                    if (!isShipPlacementOverlapping(currentlySelectedShip.getXCoordinate(), currentlySelectedShip.getYCoordinate(), currentlySelectedShip.getOrientation(), currentlySelectedShip.getShipSize())) {
                         if (currentlySelectedShip.getOrientation()==GamePanel.vertical) {
                             for (int i = 0; i < currentlySelectedShip.getShipSize(); i++) {
+                                // *** NEW 11/22/24 ***
                                 containsShipGrid[currentlySelectedShip.getYCoordinate()+i][currentlySelectedShip.getXCoordinate()] = 1;
                             }
                         }
@@ -102,7 +102,7 @@ public class GamePanel extends JPanel implements Runnable {
                                 containsShipGrid[currentlySelectedShip.getYCoordinate()][currentlySelectedShip.getXCoordinate()+i] = 1;
                             }
                         }
-                        System.out.println("Test " + Arrays.deepToString(containsShipGrid));
+                        System.out.println("Called when press finish button. State of containsShipGrid:\n" + Arrays.deepToString(containsShipGrid).replace("],", "],\n"));
                         currentlySelectedShip = shipsToBePlaced.pop();
                         alreadyPlacedShips.add(currentlySelectedShip);
                     }
@@ -193,6 +193,34 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
 
+    }
+
+    /*
+    * NEW 11/22/24
+    * this method is used in placeShipsPhase
+    * used as a check for when user attempts to change position of their ships to ensure it doesn't overlap with an occupied square
+    *   relies upon updating containsShipGrid
+    *   returns true if finds ship overlaps on a square, returns false if no overlap
+    * currently its broken because it doens't accurately stop the user from clicking on the button
+    */
+    private boolean isShipPlacementOverlapping(int xCoordinate, int yCoordinate, int orientation, int shipSize) {
+        if (orientation==GamePanel.vertical) {
+            // check all spots are unoccupied
+            for (int i = 0; i < shipSize; i++) {
+                if (containsShipGrid[yCoordinate+i][xCoordinate] != 0) {
+                    return true;
+                }
+            }
+        }
+        else {
+            // check all spots are unoccupied
+            for (int i = 0; i < shipSize; i++) {
+                if (containsShipGrid[yCoordinate][xCoordinate+i] != 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void paintComponent(Graphics g) {
