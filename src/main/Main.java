@@ -1,6 +1,7 @@
 package main;
 
 import javax.swing.JFrame;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class Main {
@@ -12,6 +13,7 @@ public class Main {
 
         // add title JPanel to window JFrame
         TitlePanel titlePanel = new TitlePanel(window);
+        titlePanel.setBorder(new EmptyBorder(10, 10, 40, 10));
         window.add(titlePanel);
 
         // centers window

@@ -47,6 +47,10 @@ public class GamePanel extends JPanel implements Runnable {
 
     JFrame gameWindow;
 
+    // string constants displayed in instruction phase
+    String instructionBeginString = "Please place your ";
+    String instructionEndString = " on the board. Press the button to finish.";
+
     // player turn is 0, opponent turn is 1
     int playerTurn = 0;
 
@@ -78,7 +82,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void initializeGUI() {
         if (gameStage == placeShipsGameStage) {
-            instructionLabel = new JLabel("Place your AIRCRAFT CARRIER, use the arrow keys to place and the space bar to change orientation. Press the button to finish");
+            instructionLabel = new JLabel(instructionBeginString + "PATROL_BOAT" + instructionEndString);
             instructionLabel.setForeground(Color.WHITE);
             this.add(instructionLabel);
 
@@ -104,6 +108,8 @@ public class GamePanel extends JPanel implements Runnable {
                         }
                         System.out.println("Called when press finish button. State of containsShipGrid:\n" + Arrays.deepToString(containsShipGrid).replace("],", "],\n"));
                         currentlySelectedShip = shipsToBePlaced.pop();
+                        // 11/24 NEW : NEED TO UPDATE THIS BASED ON WHICH SHIP WE'RE PLACING
+                        instructionLabel.setText(instructionBeginString + currentlySelectedShip.shipType + instructionEndString);
                         alreadyPlacedShips.add(currentlySelectedShip);
                     }
                 } else {
@@ -227,12 +233,7 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        // ************* SHOULD WE HAVE THIS HERE OR ELSEWHERE? BC OUR ACTION LISTENER CHANGES THE THING HERE *********************
-        // DO WE ADD THIS TO THE JPANEL OR THE FRAME?
-        // add buttons and label
-        // check game state and render conditionally
         if (gameStage == placeShipsGameStage) {
-//            this.add(new JLabel("Place your AIRCRAFT CARRIER, use the arrow keys to place and the space bar to change orientation. Press the button to finish"));
             board.draw(g2);
 
             for (Ship s : alreadyPlacedShips) {
@@ -278,7 +279,7 @@ public class GamePanel extends JPanel implements Runnable {
         playerShips.add(new Ship(ShipType.SUBMARINE));
         playerShips.add(new Ship(ShipType.PATROL_BOAT));
 
-        // ************* set opponent ships randomly ******************
+        // opponent ships will be set randomly
         opponentShips.add(new Ship(ShipType.AIRCRAFT_CARRIER));
         opponentShips.add(new Ship(ShipType.BATTLESHIP));
         opponentShips.add(new Ship(ShipType.DESTROYER));
