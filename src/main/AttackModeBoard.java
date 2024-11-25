@@ -12,7 +12,7 @@ public class AttackModeBoard extends Board {
     }
 
     public int getXCoordFromPositionOnGrid(int xPos) {
-        return ((xPos - offset) / SQUARE_SIZE);
+        return ((xPos - xOffset) / SQUARE_SIZE);
     }
 
     public int getYCoordFromPositionOnGrid(int yPos) {

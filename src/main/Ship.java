@@ -9,9 +9,8 @@ public class Ship {
 
     public int SQUARE_SIZE;
     public int HALF_SQUARE_SIZE;
-    // offset used to position ships on attack mode boards
-    // THIS IS BECOMING PROBLEMATIC, BECAUSE IN THE MAIN CLASS, WE HAVE A LIST OF SHIPS TO BE PLACED WITH NO BOOLEAN IN THE CONSTRUCTOR
-    public int offset;
+    // x position offset used to position ships on attack mode boards
+    public int xOffset;
 
     final int MAX_COLUMNS = 9;
     final int MAX_ROWS = 9;
@@ -32,12 +31,11 @@ public class Ship {
     // constructor for PlaceShipShip
     public Ship(ShipType shipType) {
 
-        // ****************************
-        offset = 0;
-        SQUARE_SIZE = 90;
+        // NEW 11/25 CHANGING  XOFFSET OF PLACESHIPS BOARD
+        xOffset = 0;
+        SQUARE_SIZE = 75;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
 
-        // ~~~~~~~~~~~~~~~~~~~~~` *** test this *** ~~~~~~~~~~~~~~~~~~~~~
         HashMap<ShipType, Integer> shipTypeToShipSizeMap = new HashMap<ShipType, Integer>();
         shipTypeToShipSizeMap.put(ShipType.AIRCRAFT_CARRIER, 5);
         shipTypeToShipSizeMap.put(ShipType.BATTLESHIP, 4);
@@ -67,10 +65,10 @@ public class Ship {
         // ****************************
         SQUARE_SIZE = 75;
         if (playerNum==0) {
-            offset = 20;
+            xOffset = 20;
         }
         else {
-            offset = 900;
+            xOffset = 900;
         }
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
 
@@ -137,16 +135,17 @@ public class Ship {
     }
 
     public int getXPositionOnGrid(int col) {
-        return col * SQUARE_SIZE + offset;
+        return col * SQUARE_SIZE + xOffset;
     }
     public int getYPositionOnGrid(int row) {
         return row * SQUARE_SIZE;
     }
 
-    /* this method does not work with attack ships - use attack ship board method instead */
+    /* this method is for placement ships only ; for attack ships use attack ship board method instead */
     public int getXCoordFromPositionOnGrid(int xPos) {
         return (xPos + HALF_SQUARE_SIZE) / SQUARE_SIZE;
     }
+
 
     public int getYCoordFromPositionOnGrid(int yPos) {
         return (yPos + HALF_SQUARE_SIZE) / SQUARE_SIZE;
@@ -160,16 +159,16 @@ public class Ship {
     }
 
     public void draw(Graphics2D g2) {
-        g2.setColor(Color.black);
+        g2.setColor(new Color(6, 14, 20));
 
 //        System.out.print("plain ship draw ");
 
         if(orientation==GamePanel.vertical) {
             // params are x, y, width, height
-            g2.fillRect(xPosition + offset, yPosition, SQUARE_SIZE, shipSize*SQUARE_SIZE);
+            g2.fillRect(xPosition + xOffset, yPosition, SQUARE_SIZE, shipSize*SQUARE_SIZE);
         }
         else {
-            g2.fillRect(xPosition + offset, yPosition, shipSize*SQUARE_SIZE, SQUARE_SIZE);
+            g2.fillRect(xPosition + xOffset, yPosition, shipSize*SQUARE_SIZE, SQUARE_SIZE);
         }
     }
 }

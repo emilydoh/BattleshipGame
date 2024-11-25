@@ -13,8 +13,8 @@ import java.util.Deque;
  */
 public class GamePanel extends JPanel implements Runnable {
 
-    public static final int WIDTH = 1100;
-    public static final int HEIGHT = 800;
+    public static final int WIDTH = 675;
+    public static final int HEIGHT = 675;
     // redraws frame 60 times in one second
     final int FPS = 60;
 
@@ -48,16 +48,16 @@ public class GamePanel extends JPanel implements Runnable {
     JFrame gameWindow;
 
     // string constants displayed in instruction phase
-    String instructionBeginString = "Please place your ";
-    String instructionEndString = " on the board. Press the button to finish.";
+    String instructionBeginString = "Click any square on the board to place your ";
+    String instructionEndString = ". Use the buttons to rotate your ship and finalize placement.";
 
     // player turn is 0, opponent turn is 1
     int playerTurn = 0;
 
     // maintain references to these components so we can remove them from the panel when entering new phase
-    private JLabel instructionLabel;
-    private JButton changeShipOrientationButton;
-    private JButton finishPlacingShipButton;
+    private JTextArea instructionTextArea;
+    private JButton rotateButton;
+    private JButton placeButton;
 
     public GamePanel(JFrame window) {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -82,22 +82,25 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void initializeGUI() {
         if (gameStage == placeShipsGameStage) {
-            instructionLabel = new JLabel(instructionBeginString + "PATROL_BOAT" + instructionEndString);
-            instructionLabel.setForeground(Color.WHITE);
-            this.add(instructionLabel);
+            instructionTextArea = new JTextArea(instructionBeginString + "PATROL_BOAT" + instructionEndString);
+//          ** NEW 11/25 set the text color, background color, and font
+//              *** still working on layout / design
+//          instructionLabel.setForeground(Color.WHITE);
+//            instructionTextArea.setLineWrap(true);
+            instructionTextArea.setFont(new Font("Arial", Font.PLAIN, 12));
+            this.add(instructionTextArea);
 
-            changeShipOrientationButton = new JButton("Change orientation");
-            changeShipOrientationButton.addActionListener(e -> currentlySelectedShip.changeOrientation());
-            this.add(changeShipOrientationButton);
+            rotateButton = new JButton("Rotate");
+            rotateButton.addActionListener(e -> currentlySelectedShip.changeOrientation());
+            this.add(rotateButton);
 
-            finishPlacingShipButton = new JButton("Finished placing");
-            finishPlacingShipButton.addActionListener(e -> {
+            placeButton = new JButton("Place");
+            placeButton.addActionListener(e -> {
                 if (!shipsToBePlaced.isEmpty()) {
                     // button should not place the ship if placing it would overlap other ships
                     if (!isShipPlacementOverlapping(currentlySelectedShip.getXCoordinate(), currentlySelectedShip.getYCoordinate(), currentlySelectedShip.getOrientation(), currentlySelectedShip.getShipSize())) {
                         if (currentlySelectedShip.getOrientation()==GamePanel.vertical) {
                             for (int i = 0; i < currentlySelectedShip.getShipSize(); i++) {
-                                // *** NEW 11/22/24 ***
                                 containsShipGrid[currentlySelectedShip.getYCoordinate()+i][currentlySelectedShip.getXCoordinate()] = 1;
                             }
                         }
@@ -106,32 +109,41 @@ public class GamePanel extends JPanel implements Runnable {
                                 containsShipGrid[currentlySelectedShip.getYCoordinate()][currentlySelectedShip.getXCoordinate()+i] = 1;
                             }
                         }
-                        System.out.println("Called when press finish button. State of containsShipGrid:\n" + Arrays.deepToString(containsShipGrid).replace("],", "],\n"));
+//                        System.out.println("Called when press finish button. State of containsShipGrid:\n" + Arrays.deepToString(containsShipGrid).replace("],", "],\n"));
                         currentlySelectedShip = shipsToBePlaced.pop();
-                        // 11/24 NEW : NEED TO UPDATE THIS BASED ON WHICH SHIP WE'RE PLACING
-                        instructionLabel.setText(instructionBeginString + currentlySelectedShip.shipType + instructionEndString);
+                        // display instructions based on current ship we're placing
+                        instructionTextArea.setText(instructionBeginString + currentlySelectedShip.shipType + instructionEndString);
                         alreadyPlacedShips.add(currentlySelectedShip);
                     }
                 } else {
-                    // transition to attack mode
+                    // transition to attack mode upon clicking finish button when no more ships to be placed
                     gameStage = attackGameStage;
-                    // pass in already placed ships to the Game object, it returns attack mode ships for player and opponenet.
+                    // pass in already placed ships to the Game object
                     game.start(alreadyPlacedShips);
 
+                    // clear components from GamePanel JPanel then resize window for attack mode
                     removePlacementComponents();
                     gameWindow.setSize(1600, 1000);
                     gameWindow.setLocationRelativeTo(null);
 
+                    // ** NEW 11/25 add JLabels for each board -
+                        //  TO DO : still need to center them above respective boards and figure out layout
+                    JLabel yourBoardLabel = new JLabel("Your Board");
+                    yourBoardLabel.setForeground(Color.WHITE);
+                    this.add(yourBoardLabel);
+                    JLabel opponentsBoardLabel = new JLabel("Opponent's board");
+                    opponentsBoardLabel.setForeground(Color.WHITE);
+                    this.add(opponentsBoardLabel);
                 }
             });
-            this.add(finishPlacingShipButton);
+            this.add(placeButton);
         }
     }
 
     private void removePlacementComponents() {
-        this.remove(instructionLabel);
-        this.remove(changeShipOrientationButton);
-        this.remove(finishPlacingShipButton);
+        this.remove(instructionTextArea);
+        this.remove(rotateButton);
+        this.remove(placeButton);
         this.revalidate();
         this.repaint();
     }
@@ -191,7 +203,6 @@ public class GamePanel extends JPanel implements Runnable {
                 playerCoordGrid = game.getPlayerCoordinateGrid();
 
                 playerTurn = game.getCurrentTurn();
-                // THEN AFTER THIS WE NEED TO CALL OPPONENTS TURN AND MAKE SURE IT GETS UPDATED
                 game.makeCPUTurn();
                 opponentCoordGrid = game.getOpponentCoordinateGrid();
                 playerCoordGrid = game.getPlayerCoordinateGrid();
@@ -202,12 +213,10 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     /*
-    * NEW 11/22/24
     * this method is used in placeShipsPhase
-    * used as a check for when user attempts to change position of their ships to ensure it doesn't overlap with an occupied square
+    * called when user presses PLACE button to ensure ship placement doesn't overlap with an occupied square
     *   relies upon updating containsShipGrid
     *   returns true if finds ship overlaps on a square, returns false if no overlap
-    * currently its broken because it doens't accurately stop the user from clicking on the button
     */
     private boolean isShipPlacementOverlapping(int xCoordinate, int yCoordinate, int orientation, int shipSize) {
         if (orientation==GamePanel.vertical) {
@@ -285,7 +294,5 @@ public class GamePanel extends JPanel implements Runnable {
         opponentShips.add(new Ship(ShipType.DESTROYER));
         opponentShips.add(new Ship(ShipType.SUBMARINE));
         opponentShips.add(new Ship(ShipType.PATROL_BOAT));
-
-
     }
 }

@@ -108,10 +108,6 @@ public class Coordinate {
             2b) ship unsunk -> red
         3) checked & no ship -> darker gray
      */
-
-    /*
-        we also want to draw our own ships?
-     */
     public void draw(Graphics2D g2) {
         // only draw if already checked coordinate or its a player's ship
         if (playerShip) {

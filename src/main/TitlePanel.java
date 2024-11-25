@@ -11,7 +11,7 @@ public class TitlePanel extends JPanel {
 
     public TitlePanel(JFrame window) {
         this.window = window;
-        setBackground(Color.BLACK);
+        setBackground(new Color(6, 57, 112));
         setLayout(new BorderLayout());
 
         JLabel titleLabel = new JLabel("Battleship", SwingConstants.CENTER);
@@ -31,7 +31,7 @@ public class TitlePanel extends JPanel {
         });
 
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(Color.BLACK);
+        buttonPanel.setBackground(new Color(6, 57, 112, 0));
         buttonPanel.add(startButton);
         add(buttonPanel, BorderLayout.SOUTH);
     }
