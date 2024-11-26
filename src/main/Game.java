@@ -1,5 +1,4 @@
 package main;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.HashMap;
 
@@ -7,7 +6,7 @@ public class Game {
 
     // 0 is player 1 and 1 is player 2
     private int playerTurn;
-    private boolean gameInProgress;
+    private boolean isgameInProgress;
 
     final int BOARD_COLUMNS = 9;
     final int BOARD_ROWS = 9;
@@ -33,7 +32,7 @@ public class Game {
     private Coordinate[][] playerCoordinateGrid = new Coordinate[BOARD_ROWS][BOARD_COLUMNS];
     private Coordinate[][] opponentCoordinateGrid = new Coordinate[BOARD_ROWS][BOARD_COLUMNS];
 
-    /// ***************************** UPDATE THIS WHEN SINK A SHIP ****************
+    /// ******* UPDATE THIS WHEN SINK A SHIP ****************
     HashMap<ShipType,Integer> opponentHowManyOfShipTypeLeft;
 
     private int roundNumber;
@@ -48,7 +47,7 @@ public class Game {
      */
     public Game(AttackModeBoard playerBoard, AttackModeBoard opponentBoard) {
         playerTurn = 0;
-        gameInProgress = false;
+        isgameInProgress = false;
         roundNumber = 1;
         this.playerBoard = playerBoard;
         this.opponentBoard = opponentBoard;
@@ -70,7 +69,7 @@ public class Game {
     }
 
     public void start(ArrayList<Ship> playerShips) {
-        gameInProgress = true;
+        isgameInProgress = true;
         placePlayerShips(playerShips);
     }
 
@@ -237,9 +236,6 @@ public class Game {
             stateOfPlayerBoard[x][y] = 2;
 
             playerCoordinateGrid[x][y].getShip().setCoordinateArrayAsChecked(x, y);
-
-            // ***************** check if it sunk a ship and do something with it *******************
-            boolean wasShipSunk = checkIfShipSunk(x, y);
         }
         playerCoordinateGrid[x][y].updateHasBeenChecked(); // update coordinate to show its hit
 
@@ -254,15 +250,11 @@ public class Game {
 
         //  *** if returns null none remain we need to end the game ***
         if (coordinateToAttack==null) {
-
+            isgameInProgress=false;
         }
         else {
             opponentCoordinateGrid[coordinateToAttack.getX()][coordinateToAttack.getY()].updateHasBeenChecked();
         }
-
-
-
-        /* IMPLEMENT */
         playerTurn = 0;
     }
 
@@ -287,7 +279,6 @@ public class Game {
         return nextCoordinateToAttack;
     }
 
-    /**************** TODO IMPLEMENT ********************/
     /* this method creates a heatmap for the current state of the board and remaining ships based on probabilities of ship configurations */
     /* event is a single ship placement  */
     /* look at the probability that a coordinate contains a ship */
@@ -455,15 +446,14 @@ public class Game {
         AttackModeShip s = playerCoordinateGrid[x][y].getShip();
         return s.decrementRemainingSquaresCount(); // if this returns true, we sunk ship
     }
-    /************************************/
     public Coordinate[][] getPlayerCoordinateGrid() {
         return playerCoordinateGrid;
     }
     public Coordinate[][] getOpponentCoordinateGrid() {
         return opponentCoordinateGrid;
     }
-    public boolean isGameInProgress() {
-        return gameInProgress;
+    public boolean isGameOver() {
+        return !isgameInProgress;
     }
     public int getCurrentTurn() {
         return playerTurn;

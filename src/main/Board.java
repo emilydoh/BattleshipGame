@@ -60,9 +60,9 @@ public class Board {
 
         // then draw vertical + horizontal grid lines on top
         g2.setColor(new Color(201, 200, 195));
-        for (int row = 0; row < MAX_ROWS; row++) {
+        for (int row = 0; row <= MAX_ROWS; row++) {
             g2.draw(new Line2D.Double(row*SQUARE_SIZE + xOffset, 0, row*SQUARE_SIZE + xOffset, MAX_ROWS*SQUARE_SIZE));
-            for (int col = 0; col < MAX_COLUMNS; col++) {
+            for (int col = 0; col <= MAX_COLUMNS; col++) {
                 g2.draw(new Line2D.Double(0 + xOffset, col*SQUARE_SIZE, MAX_ROWS*SQUARE_SIZE + xOffset, col*SQUARE_SIZE));
             }
         }

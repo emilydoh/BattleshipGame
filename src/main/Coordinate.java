@@ -136,7 +136,5 @@ public class Coordinate {
             }
             g2.fillRect(xPosition, yPosition, SQUARE_SIZE, SQUARE_SIZE);
         }
-        // ****************** for debugging on our board uncomment this **************
-//        g2.fillRect(xPosition, yPosition, SQUARE_SIZE, SQUARE_SIZE);
     }
 }
