@@ -123,17 +123,26 @@ public class GamePanel extends JPanel implements Runnable {
 
                     // clear components from GamePanel JPanel then resize window for attack mode
                     removePlacementComponents();
-                    gameWindow.setSize(1600, 1000);
+                    gameWindow.setSize(1600, 800);
                     gameWindow.setLocationRelativeTo(null);
 
                     // ** NEW 11/25 add JLabels for each board -
                         //  TO DO : still need to center them above respective boards and figure out layout
+                    JPanel boardsLabelsPanel = new JPanel();
+                    // we put the 2 labels on a JPanel with a transparent background and use BorderLayout to place them on left and right
+                    boardsLabelsPanel.setBackground(new Color(1, 1, 1, 0));
+                    boardsLabelsPanel.setLayout(new BorderLayout());
+                    boardsLabelsPanel.setPreferredSize(new Dimension(1100, 80));
+
                     JLabel yourBoardLabel = new JLabel("Your Board");
+                    yourBoardLabel.setFont(new Font("Arial", Font.BOLD, 32));
                     yourBoardLabel.setForeground(Color.WHITE);
-                    this.add(yourBoardLabel);
+                    boardsLabelsPanel.add(yourBoardLabel, BorderLayout.WEST);
                     JLabel opponentsBoardLabel = new JLabel("Opponent's board");
+                    opponentsBoardLabel.setFont(new Font("Arial", Font.BOLD, 32));
                     opponentsBoardLabel.setForeground(Color.WHITE);
-                    this.add(opponentsBoardLabel);
+                    boardsLabelsPanel.add(opponentsBoardLabel, BorderLayout.EAST);
+                    this.add(boardsLabelsPanel);
                 }
             });
             this.add(placeButton);
