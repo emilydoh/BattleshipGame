@@ -13,12 +13,12 @@ public class AttackModeShip extends Ship {
         if (playerNum == 0) {
             if (orientation==GamePanel.vertical) {
                 for (int i=0; i<shipSize; i ++) {
-                    coordinateArray[i] = new Coordinate(xCoordinate, yCoordinate+i, xCoordinate * SQUARE_SIZE + xOffset, (yCoordinate+i) * SQUARE_SIZE, this, false);
+                    coordinateArray[i] = new Coordinate(xCoordinate, yCoordinate+i, xCoordinate * SQUARE_SIZE + xOffset, (yCoordinate+i) * SQUARE_SIZE + yOffset, this, false);
                 }
             }
             else {
                 for (int i=0; i<shipSize; i ++) {
-                    coordinateArray[i] = new Coordinate(xCoordinate+i, yCoordinate, (xCoordinate+i) * SQUARE_SIZE + xOffset, yCoordinate * SQUARE_SIZE, this, false);
+                    coordinateArray[i] = new Coordinate(xCoordinate+i, yCoordinate, (xCoordinate+i) * SQUARE_SIZE + xOffset, yCoordinate * SQUARE_SIZE + yOffset, this, false);
                 }
             }
         }

@@ -11,8 +11,11 @@ public class Game {
     final int BOARD_COLUMNS = 9;
     final int BOARD_ROWS = 9;
     final int SQUARE_SIZE = 75;
-    final int OPPONENT_BOARD_OFFSET = 900;
-    final int PLAYER_BOARD_OFFSET = 20;
+
+    // for passing in offsets to coordinates to make sure they're drawn at correct offset to  align with board in attack mode boards
+    final int OPPONENT_BOARD_OFFSET_X = 900;
+    final int PLAYER_BOARD_OFFSET_X = 20;
+    final int BOARD_OFFSET_Y = 80;
 
     AttackModeBoard playerBoard;
     AttackModeBoard opponentBoard;
@@ -32,10 +35,18 @@ public class Game {
     private Coordinate[][] playerCoordinateGrid = new Coordinate[BOARD_ROWS][BOARD_COLUMNS];
     private Coordinate[][] opponentCoordinateGrid = new Coordinate[BOARD_ROWS][BOARD_COLUMNS];
 
-    /// ******* UPDATE THIS WHEN SINK A SHIP ****************
+    // used in our heatmap method
     HashMap<ShipType,Integer> opponentHowManyOfShipTypeLeft;
 
-    private int roundNumber;
+    // *** 11/25 NEW ***
+    // used to check how many squares remain of each shipType - used to check if ship is sunk so we can mark all coordinates as sunk
+    HashMap<ShipType,Integer> opponentShipTypeToNumSquaresUnhit;
+    HashMap<ShipType,Integer> playerShipTypeToNumSquaresUnhit;
+
+    // keeps track of which coordinates each ship overlaps
+    HashMap <ShipType, Coordinate[]> opponentShipTypeToCoordinates;
+    HashMap <ShipType, Coordinate[]> playerShipTypeToCoordinates;
+
 
     private ArrayList<AttackModeShip> playerBoardAttackShips = new ArrayList<AttackModeShip>();
     private ArrayList<AttackModeShip> opponentBoardAttackShips = new ArrayList<AttackModeShip>();
@@ -48,7 +59,6 @@ public class Game {
     public Game(AttackModeBoard playerBoard, AttackModeBoard opponentBoard) {
         playerTurn = 0;
         isgameInProgress = false;
-        roundNumber = 1;
         this.playerBoard = playerBoard;
         this.opponentBoard = opponentBoard;
 
@@ -101,7 +111,7 @@ public class Game {
         for (int j = 0; j < BOARD_COLUMNS; j++) {
             for (int k = 0; k < BOARD_ROWS; k++) {
                 if (opponentCoordinateGrid[k][j] == null) {
-                    opponentCoordinateGrid[k][j] = new Coordinate(k, j, OPPONENT_BOARD_OFFSET + (k * SQUARE_SIZE), j*SQUARE_SIZE);
+                    opponentCoordinateGrid[k][j] = new Coordinate(k, j, OPPONENT_BOARD_OFFSET_X + (k * SQUARE_SIZE), BOARD_OFFSET_Y + j*SQUARE_SIZE);
                 }
             }
         }
@@ -130,7 +140,7 @@ public class Game {
         for (int j = 0; j < BOARD_COLUMNS; j++) {
             for (int k = 0; k < BOARD_ROWS; k++) {
                 if (playerCoordinateGrid[k][j] == null) {
-                    playerCoordinateGrid[k][j] = new Coordinate(k, j, PLAYER_BOARD_OFFSET + (k * SQUARE_SIZE), j*SQUARE_SIZE);
+                    playerCoordinateGrid[k][j] = new Coordinate(k, j, PLAYER_BOARD_OFFSET_X + (k * SQUARE_SIZE), BOARD_OFFSET_Y + j*SQUARE_SIZE);
                 }
             }
         }
@@ -153,7 +163,7 @@ public class Game {
                     newShip = new AttackModeShip(s.getShipType(), 0, GamePanel.vertical, xGuess, yGuess);
                     for (int i = 0; i < s.getShipSize(); i++) {
                         stateOfPlayerBoard[xGuess][yGuess+i] = 1;
-                        playerCoordinateGrid[xGuess][yGuess+i] = new Coordinate(xGuess, yGuess+i, xGuess*SQUARE_SIZE + PLAYER_BOARD_OFFSET, (yGuess+i)*SQUARE_SIZE, newShip, false);
+                        playerCoordinateGrid[xGuess][yGuess+i] = new Coordinate(xGuess, yGuess+i, xGuess*SQUARE_SIZE + PLAYER_BOARD_OFFSET_X, (yGuess+i)*SQUARE_SIZE + BOARD_OFFSET_Y, newShip, false);
                     }
                     playerBoardAttackShips.add(newShip);
                 }
@@ -161,7 +171,7 @@ public class Game {
                     newShip = new AttackModeShip(s.getShipType(), 0, GamePanel.horizontal, xGuess, yGuess);
                     for (int i = 0; i < s.getShipSize(); i++) {
                         stateOfPlayerBoard[xGuess+i][yGuess] = 1;
-                        playerCoordinateGrid[xGuess+i][yGuess] = new Coordinate(xGuess+i, yGuess, (xGuess+i)*SQUARE_SIZE + PLAYER_BOARD_OFFSET, yGuess*SQUARE_SIZE, newShip, false);
+                        playerCoordinateGrid[xGuess+i][yGuess] = new Coordinate(xGuess+i, yGuess, (xGuess+i)*SQUARE_SIZE + PLAYER_BOARD_OFFSET_X, yGuess*SQUARE_SIZE + BOARD_OFFSET_Y, newShip, false);
                     }
                     playerBoardAttackShips.add(newShip);
                 }
@@ -230,14 +240,27 @@ public class Game {
         // ** if we hit a ship - we must check to see if its been sunk - this will be difficult without knowing orientation or type of ship**
         // maybe it would be good to maintain a grid of coordinates that say which ship occupies each square and which direction its in
 
-        // hit previously unknown square of a ship
+        // hit previously unknown square that contains a ship
         if (stateOfPlayerBoard[x][y] != 0) {
             // update state to show its been hit
             stateOfPlayerBoard[x][y] = 2;
 
-            playerCoordinateGrid[x][y].getShip().setCoordinateArrayAsChecked(x, y);
+            // check if the ship is sunk
+            //      if so we need to update each of that ship's corresponding coordinates within playerCoordinateGrid to mark as containing sunk ship
+//            should we have overall counter for numShipsRemainingOpponent? or numSpacesLeftToHit and decrement it each time hit an opponents square?
+//            2 hashmap for each player to monitor state of game :
+//
+//              decrement this each time?
+//            1 containing ShipType -> (numCoordinatesLeftUnhit)
+                    // after decrementing check if numCoordinatesLeftUnhit == 0 => if so need to go through all coordinates an uppdate them in
+            // playerCoordinateGrid to mark as sunk
+
+            //             ShipType -> ArrayList of Coordinates (shows which coordinates it takes up)
+//            playerCoordinateGrid[x][y].getShip();
         }
         playerCoordinateGrid[x][y].updateHasBeenChecked(); // update coordinate to show its hit
+
+
 
         // change turn
         playerTurn=1;

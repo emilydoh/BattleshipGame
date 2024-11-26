@@ -18,14 +18,15 @@ public class Board {
     public int SQUARE_SIZE;
     public int HALF_SQUARE_SIZE;
     public int xOffset;
+    public int yOffset;
 
     /*
      place ships mode constructor
      */
     public Board() {
         SQUARE_SIZE = 75;
-        // ** NEW 11/25 TESTING OUT DRAWING PLACESHIPS BOARD AT DIFFERENT OFFSET **
         xOffset = 0;
+        yOffset = 0;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
     }
 
@@ -44,6 +45,7 @@ public class Board {
         else {
             xOffset = 900;
         }
+        yOffset = 80;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
 
     }
@@ -54,16 +56,16 @@ public class Board {
         g2.setColor(new Color(34, 84, 19));
         for (int row = 0; row < MAX_ROWS; row++) {
             for (int col = 0; col < MAX_COLUMNS; col++) {
-                g2.fillRect(col*SQUARE_SIZE + xOffset, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+                g2.fillRect(col*SQUARE_SIZE + xOffset, row*SQUARE_SIZE + yOffset, SQUARE_SIZE, SQUARE_SIZE);
             }
         }
 
         // then draw vertical + horizontal grid lines on top
         g2.setColor(new Color(201, 200, 195));
         for (int row = 0; row <= MAX_ROWS; row++) {
-            g2.draw(new Line2D.Double(row*SQUARE_SIZE + xOffset, 0, row*SQUARE_SIZE + xOffset, MAX_ROWS*SQUARE_SIZE));
+            g2.draw(new Line2D.Double(row*SQUARE_SIZE + xOffset, 0 + yOffset, row*SQUARE_SIZE + xOffset, MAX_ROWS*SQUARE_SIZE + yOffset));
             for (int col = 0; col <= MAX_COLUMNS; col++) {
-                g2.draw(new Line2D.Double(0 + xOffset, col*SQUARE_SIZE, MAX_ROWS*SQUARE_SIZE + xOffset, col*SQUARE_SIZE));
+                g2.draw(new Line2D.Double(0 + xOffset, col*SQUARE_SIZE + yOffset, MAX_ROWS*SQUARE_SIZE + xOffset, col*SQUARE_SIZE + yOffset));
             }
         }
     }

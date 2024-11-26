@@ -11,6 +11,7 @@ public class Ship {
     public int HALF_SQUARE_SIZE;
     // x position offset used to position ships on attack mode boards
     public int xOffset;
+    public int yOffset;
 
     final int MAX_COLUMNS = 9;
     final int MAX_ROWS = 9;
@@ -30,9 +31,9 @@ public class Ship {
 
     // constructor for PlaceShipShip
     public Ship(ShipType shipType) {
-
-        // NEW 11/25 CHANGING  XOFFSET OF PLACESHIPS BOARD
         xOffset = 0;
+        // NEW 11/26 leaving space at the top for the instructions and buttons
+        yOffset = 0;
         SQUARE_SIZE = 75;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
 
@@ -70,6 +71,7 @@ public class Ship {
         else {
             xOffset = 900;
         }
+        yOffset = 80;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
 
         // ~~~~~~~~~~~~~~~~~~~~~` *** test this *** ~~~~~~~~~~~~~~~~~~~~~
@@ -127,7 +129,7 @@ public class Ship {
         this.xCoordinate = getXCoordFromPositionOnGrid(xpos);
         this.yCoordinate = getYCoordFromPositionOnGrid(ypos);
 
-        System.out.println("(X: " + xCoordinate + " Y: " + yCoordinate + ")");
+//        System.out.println("(X: " + xCoordinate + " Y: " + yCoordinate + ")");
 
         this.xPosition = getXPositionOnGrid(xCoordinate);
         this.yPosition = getYPositionOnGrid(yCoordinate);
@@ -138,7 +140,7 @@ public class Ship {
         return col * SQUARE_SIZE + xOffset;
     }
     public int getYPositionOnGrid(int row) {
-        return row * SQUARE_SIZE;
+        return row * SQUARE_SIZE + yOffset;
     }
 
     /* this method is for placement ships only ; for attack ships use attack ship board method instead */
@@ -165,7 +167,7 @@ public class Ship {
 
         if(orientation==GamePanel.vertical) {
             // params are x, y, width, height
-            g2.fillRect(xPosition + xOffset, yPosition, SQUARE_SIZE, shipSize*SQUARE_SIZE);
+            g2.fillRect(xPosition + xOffset, yPosition + yOffset, SQUARE_SIZE, shipSize*SQUARE_SIZE);
         }
         else {
             g2.fillRect(xPosition + xOffset, yPosition, shipSize*SQUARE_SIZE, SQUARE_SIZE);

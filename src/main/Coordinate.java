@@ -18,7 +18,7 @@ public class Coordinate {
     private boolean containsShip;
     private boolean containsSunkShip;
 
-    private boolean playerShip;
+    private boolean isThisPlayersShip;
 
     public final int SQUARE_SIZE=75;
 
@@ -35,7 +35,7 @@ public class Coordinate {
     }
 
     // Coordinate with ship constructor
-    public Coordinate(int x, int y, int xPosition, int yPosition, AttackModeShip ship, boolean playerShip) {
+    public Coordinate(int x, int y, int xPosition, int yPosition, AttackModeShip ship, boolean isThisPlayersShip) {
         this.ship = ship;
         this.x = x;
         this.y = y;
@@ -44,7 +44,7 @@ public class Coordinate {
         containsShip = true;
         hasBeenChecked = false;
         containsSunkShip = false;
-        this.playerShip = playerShip;
+        this.isThisPlayersShip = isThisPlayersShip;
     }
 
     // two coordinates are equal if their x, y are equal
@@ -109,8 +109,9 @@ public class Coordinate {
         3) checked & no ship -> darker gray
      */
     public void draw(Graphics2D g2) {
-        // only draw if already checked coordinate or its a player's ship
-        if (playerShip) {
+        // only draw if its the player's ship on the opponents board or an already checked coordinate on players board
+        if (isThisPlayersShip) {
+            // i dont think this condition is ever met
             if (containsSunkShip) {
                 g2.setColor(new Color(6, 14, 20));
             }
@@ -136,5 +137,7 @@ public class Coordinate {
             }
             g2.fillRect(xPosition, yPosition, SQUARE_SIZE, SQUARE_SIZE);
         }
+        // ****************** for debugging on our board uncomment this **************
+//        g2.fillRect(xPosition, yPosition, SQUARE_SIZE, SQUARE_SIZE);
     }
 }

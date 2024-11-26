@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 
 
@@ -12,8 +13,8 @@ import java.util.Deque;
  */
 public class GamePanel extends JPanel implements Runnable {
 
-    public static final int WIDTH = 676;
-    public static final int HEIGHT = 676;
+    public static final int WIDTH = 675;
+    public static final int HEIGHT = 675;
     // redraws frame 60 times in one second
     final int FPS = 60;
 
@@ -60,7 +61,7 @@ public class GamePanel extends JPanel implements Runnable {
 
     public GamePanel(JFrame window) {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        setBackground(new Color(15, 15, 15));
+        setBackground(Color.BLACK);
         setDoubleBuffered(true);
         setFocusable(true);
 
@@ -82,14 +83,11 @@ public class GamePanel extends JPanel implements Runnable {
     private void initializeGUI() {
         if (gameStage == placeShipsGameStage) {
             instructionTextArea = new JTextArea(instructionBeginString + "PATROL_BOAT" + instructionEndString);
-            instructionTextArea.setBackground(new Color(1, 1, 1, 0));
-            instructionTextArea.setForeground(Color.WHITE);
-            instructionTextArea.setPreferredSize(new Dimension(620, 50));
-            instructionTextArea.setLineWrap(true);
 //          ** NEW 11/25 set the text color, background color, and font
 //              *** still working on layout / design
+//          instructionLabel.setForeground(Color.WHITE);
 //            instructionTextArea.setLineWrap(true);
-            instructionTextArea.setFont(new Font("Arial", Font.PLAIN, 16));
+            instructionTextArea.setFont(new Font("Arial", Font.PLAIN, 12));
             this.add(instructionTextArea);
 
             rotateButton = new JButton("Rotate");
@@ -218,12 +216,6 @@ public class GamePanel extends JPanel implements Runnable {
                 opponentCoordGrid = game.getOpponentCoordinateGrid();
                 playerCoordGrid = game.getPlayerCoordinateGrid();
                 playerTurn = game.getCurrentTurn();
-
-                // NEW 11/25
-                // do a check for if game is over
-                // if (game.isGameOver()) {
-                //      ENDGAME -> remove / disable mouse listener and display YOU WON or YOU LOST
-                // }
             }
         }
 
@@ -259,6 +251,7 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
+        //place ships stage
         if (gameStage == placeShipsGameStage) {
             board.draw(g2);
 
@@ -266,34 +259,25 @@ public class GamePanel extends JPanel implements Runnable {
                 s.draw(g2);
             }
         }
+        // attack stage
         else {
             // display player and opponent boards
             playerBoard.draw(g2);
             opponentsBoard.draw(g2);
 
-            // draw enemy and player ships
-//           for (AttackModeShip s : attackModeShips) {
-//               s.draw(g2);
-//           }
-
            // draw each coordinate based on the coordinate arrays
+            //player board
             for (Coordinate[] row : game.getPlayerCoordinateGrid()) {
                 for (Coordinate c : row) {
                     c.draw(g2);
                 }
             }
+            //opponents board
             for (Coordinate[] row : game.getOpponentCoordinateGrid()) {
                 for (Coordinate c : row) {
                     c.draw(g2);
                 }
             }
-
-
-            // NEW 11/25
-            // do a check for if game is over
-            // if (game.isGameOver()) {
-            //      ENDGAME -> remove / disable mouse listener and display YOU WON or YOU LOST
-            // }
         }
 
     }
