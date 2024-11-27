@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 
 
@@ -14,9 +13,10 @@ import java.util.Deque;
 public class GamePanel extends JPanel implements Runnable {
 
     public static final int WIDTH = 675;
-    public static final int HEIGHT = 675;
+    public static final int HEIGHT = 760;
     // redraws frame 60 times in one second
     final int FPS = 60;
+    final Color backgroundColor = Color.WHITE;
 
     public int gameStage;
     public final int placeShipsGameStage = 0;
@@ -56,12 +56,14 @@ public class GamePanel extends JPanel implements Runnable {
 
     // maintain references to these components so we can remove them from the panel when entering new phase
     private JTextArea instructionTextArea;
+    private JPanel overlayPanel;
     private JButton rotateButton;
     private JButton placeButton;
+    private JPanel instructionAndButtonsPanel;
 
     public GamePanel(JFrame window) {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        setBackground(Color.BLACK);
+        setBackground(backgroundColor);
         setDoubleBuffered(true);
         setFocusable(true);
 
@@ -82,17 +84,16 @@ public class GamePanel extends JPanel implements Runnable {
 
     private void initializeGUI() {
         if (gameStage == placeShipsGameStage) {
+            // set instruction area font, color, and layout
+            instructionAndButtonsPanel = new JPanel(new BorderLayout());
             instructionTextArea = new JTextArea(instructionBeginString + "PATROL_BOAT" + instructionEndString);
-//          ** NEW 11/25 set the text color, background color, and font
-//              *** still working on layout / design
-//          instructionLabel.setForeground(Color.WHITE);
-//            instructionTextArea.setLineWrap(true);
-            instructionTextArea.setFont(new Font("Arial", Font.PLAIN, 12));
-            this.add(instructionTextArea);
+
+            instructionTextArea.setFont(new Font("Arial", Font.PLAIN, 18));
+            instructionAndButtonsPanel.add(instructionTextArea, BorderLayout.PAGE_START);
+            instructionTextArea.setLineWrap(true);
 
             rotateButton = new JButton("Rotate");
             rotateButton.addActionListener(e -> currentlySelectedShip.changeOrientation());
-            this.add(rotateButton);
 
             placeButton = new JButton("Place");
             placeButton.addActionListener(e -> {
@@ -122,12 +123,11 @@ public class GamePanel extends JPanel implements Runnable {
                     game.start(alreadyPlacedShips);
 
                     // clear components from GamePanel JPanel then resize window for attack mode
-                    removePlacementComponents();
+                    removePlaceShipsPhaseComponents();
                     gameWindow.setSize(1600, 800);
                     gameWindow.setLocationRelativeTo(null);
 
-                    // ** NEW 11/25 add JLabels for each board -
-                        //  TO DO : still need to center them above respective boards and figure out layout
+                    // add JLabels for each board and center above boards
                     JPanel boardsLabelsPanel = new JPanel();
                     // we put the 2 labels on a JPanel with a transparent background and use BorderLayout to place them on left and right
                     boardsLabelsPanel.setBackground(new Color(1, 1, 1, 0));
@@ -142,19 +142,29 @@ public class GamePanel extends JPanel implements Runnable {
                     opponentsBoardLabel.setFont(new Font("Arial", Font.BOLD, 32));
                     opponentsBoardLabel.setForeground(Color.WHITE);
                     boardsLabelsPanel.add(opponentsBoardLabel, BorderLayout.EAST);
+
                     this.add(boardsLabelsPanel);
+
+                    setBackground(Color.BLACK);
                 }
             });
-            this.add(placeButton);
+            // buttons panel with flow layout is nested in instructionAndButtons panel
+            JPanel buttonsPanel = new JPanel();
+            buttonsPanel.add(rotateButton);
+            buttonsPanel.add(placeButton);
+            instructionAndButtonsPanel.add(buttonsPanel);
+
+            // place a transparent panel that overlays GamePanel and assign borderlayout to it
+            overlayPanel = new JPanel(new BorderLayout());
+            overlayPanel.setPreferredSize(new Dimension(WIDTH-10, HEIGHT));
+            overlayPanel.setBackground(new Color(1, 1, 1, 0));
+            overlayPanel.add(instructionAndButtonsPanel, BorderLayout.SOUTH);
+            this.add(overlayPanel);
         }
     }
 
-    private void removePlacementComponents() {
-        this.remove(instructionTextArea);
-        this.remove(rotateButton);
-        this.remove(placeButton);
-        this.revalidate();
-        this.repaint();
+    private void removePlaceShipsPhaseComponents() {
+        this.remove(overlayPanel);
     }
 
     @Override
