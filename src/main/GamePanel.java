@@ -57,9 +57,6 @@ public class GamePanel extends JPanel implements Runnable {
     // maintain references to these components so we can remove them from the panel when entering new phase
     private JTextArea instructionTextArea;
     private JPanel overlayPanel;
-    private JButton rotateButton;
-    private JButton placeButton;
-    private JPanel instructionAndButtonsPanel;
 
     public GamePanel(JFrame window) {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -85,17 +82,17 @@ public class GamePanel extends JPanel implements Runnable {
     private void initializeGUI() {
         if (gameStage == placeShipsGameStage) {
             // set instruction area font, color, and layout
-            instructionAndButtonsPanel = new JPanel(new BorderLayout());
+            JPanel instructionAndButtonsPanel = new JPanel(new BorderLayout());
             instructionTextArea = new JTextArea(instructionBeginString + "PATROL_BOAT" + instructionEndString);
 
             instructionTextArea.setFont(new Font("Arial", Font.PLAIN, 18));
             instructionAndButtonsPanel.add(instructionTextArea, BorderLayout.PAGE_START);
             instructionTextArea.setLineWrap(true);
 
-            rotateButton = new JButton("Rotate");
+            JButton rotateButton = new JButton("Rotate");
             rotateButton.addActionListener(e -> currentlySelectedShip.changeOrientation());
 
-            placeButton = new JButton("Place");
+            JButton placeButton = new JButton("Place");
             placeButton.addActionListener(e -> {
                 if (!shipsToBePlaced.isEmpty()) {
                     // button should not place the ship if placing it would overlap other ships
