@@ -24,7 +24,7 @@ public class Board {
      place ships mode constructor
      */
     public Board() {
-        SQUARE_SIZE = 75;
+        SQUARE_SIZE = 70;
         xOffset = 0;
         yOffset = 0;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;

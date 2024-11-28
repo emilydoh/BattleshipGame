@@ -2,6 +2,8 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -12,11 +14,11 @@ import java.util.Deque;
  */
 public class GamePanel extends JPanel implements Runnable {
 
-    public static final int WIDTH = 675;
-    public static final int HEIGHT = 760;
+    public static final int WIDTH = 632;
+    public static final int HEIGHT = 770;
     // redraws frame 60 times in one second
     final int FPS = 60;
-    final Color backgroundColor = Color.WHITE;
+    final Color backgroundColor = new Color(51, 126, 28);
 
     public int gameStage;
     public final int placeShipsGameStage = 0;
@@ -54,6 +56,8 @@ public class GamePanel extends JPanel implements Runnable {
     // player turn is 0, opponent turn is 1
     int playerTurn = 0;
 
+    String font;
+
     // maintain references to these components so we can remove them from the panel when entering new phase
     private JTextArea instructionTextArea;
     private JPanel overlayPanel;
@@ -85,14 +89,18 @@ public class GamePanel extends JPanel implements Runnable {
             JPanel instructionAndButtonsPanel = new JPanel(new BorderLayout());
             instructionTextArea = new JTextArea(instructionBeginString + "PATROL_BOAT" + instructionEndString);
 
-            instructionTextArea.setFont(new Font("Arial", Font.PLAIN, 18));
+            initializeFont();
+            instructionTextArea.setFont(new Font(font, Font.PLAIN, 20));
+            instructionTextArea.setForeground(Color.WHITE);
             instructionAndButtonsPanel.add(instructionTextArea, BorderLayout.PAGE_START);
             instructionTextArea.setLineWrap(true);
 
             JButton rotateButton = new JButton("Rotate");
+            rotateButton.setFont(new Font(font, Font.BOLD, 16));
             rotateButton.addActionListener(e -> currentlySelectedShip.changeOrientation());
 
             JButton placeButton = new JButton("Place");
+            placeButton.setFont(new Font(font, Font.BOLD, 16));
             placeButton.addActionListener(e -> {
                 if (!shipsToBePlaced.isEmpty()) {
                     // button should not place the ship if placing it would overlap other ships
@@ -121,7 +129,7 @@ public class GamePanel extends JPanel implements Runnable {
 
                     // clear components from GamePanel JPanel then resize window for attack mode
                     removePlaceShipsPhaseComponents();
-                    gameWindow.setSize(1600, 800);
+                    gameWindow.setSize(1600, 850);
                     gameWindow.setLocationRelativeTo(null);
 
                     // add JLabels for each board and center above boards
@@ -132,11 +140,11 @@ public class GamePanel extends JPanel implements Runnable {
                     boardsLabelsPanel.setPreferredSize(new Dimension(1100, 80));
 
                     JLabel yourBoardLabel = new JLabel("Your Board");
-                    yourBoardLabel.setFont(new Font("Arial", Font.BOLD, 32));
+                    yourBoardLabel.setFont(new Font(font, Font.BOLD, 32));
                     yourBoardLabel.setForeground(Color.WHITE);
                     boardsLabelsPanel.add(yourBoardLabel, BorderLayout.WEST);
                     JLabel opponentsBoardLabel = new JLabel("Opponent's board");
-                    opponentsBoardLabel.setFont(new Font("Arial", Font.BOLD, 32));
+                    opponentsBoardLabel.setFont(new Font(font, Font.BOLD, 32));
                     opponentsBoardLabel.setForeground(Color.WHITE);
                     boardsLabelsPanel.add(opponentsBoardLabel, BorderLayout.EAST);
 
@@ -151,12 +159,29 @@ public class GamePanel extends JPanel implements Runnable {
             buttonsPanel.add(placeButton);
             instructionAndButtonsPanel.add(buttonsPanel);
 
+            // ** 11/27 NEW FOR COLOR PICKING
+            instructionAndButtonsPanel.setBackground(backgroundColor);
+            instructionTextArea.setBackground(backgroundColor);
+            buttonsPanel.setBackground(backgroundColor);
+
             // place a transparent panel that overlays GamePanel and assign borderlayout to it
             overlayPanel = new JPanel(new BorderLayout());
-            overlayPanel.setPreferredSize(new Dimension(WIDTH-10, HEIGHT));
+            overlayPanel.setPreferredSize(new Dimension(WIDTH-20, HEIGHT));
             overlayPanel.setBackground(new Color(1, 1, 1, 0));
             overlayPanel.add(instructionAndButtonsPanel, BorderLayout.SOUTH);
             this.add(overlayPanel);
+        }
+    }
+
+    private void initializeFont() {
+        try {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            // Danger Zone Warning font only works for capital letters
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("src/main/font/Orbitron-Regular.ttf")));
+            font = "Orbitron";
+        } catch (IOException | FontFormatException e) {
+            // if it can't properly read font, just use arial instead
+            font = "Arial";
         }
     }
 

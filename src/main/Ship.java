@@ -34,7 +34,7 @@ public class Ship {
         xOffset = 0;
         // NEW 11/26 leaving space at the top for the instructions and buttons
         yOffset = 0;
-        SQUARE_SIZE = 75;
+        SQUARE_SIZE = 70;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
 
         HashMap<ShipType, Integer> shipTypeToShipSizeMap = new HashMap<ShipType, Integer>();
