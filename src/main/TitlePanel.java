@@ -19,6 +19,7 @@ public class TitlePanel extends JPanel {
         setLayout(new BorderLayout());
 
         initializeFonts();
+        setupBattleshipImage();
 
         JLabel titleLabel = new JLabel("BATTLESHIP", SwingConstants.CENTER);
         titleLabel.setFont(new Font(font, Font.PLAIN, 60));
@@ -40,6 +41,13 @@ public class TitlePanel extends JPanel {
         buttonPanel.setBackground(new Color(6, 57, 112, 0));
         buttonPanel.add(startButton);
         add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    // import image as ImageIcon and resize it
+    private void setupBattleshipImage() {
+        JLabel battleshipLabel = new JLabel();
+        battleshipLabel.setIcon(new ImageIcon(new ImageIcon("src/main/images/battleship-8533661_1280.png").getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH)));
+        add(battleshipLabel, BorderLayout.EAST);
     }
 
     private void initializeFonts() {
