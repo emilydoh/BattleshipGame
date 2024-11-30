@@ -36,20 +36,19 @@ public class Game {
     private Coordinate[][] opponentCoordinateGrid = new Coordinate[BOARD_ROWS][BOARD_COLUMNS];
 
     // used in our heatmap method
-    HashMap<ShipType,Integer> opponentHowManyOfShipTypeLeft;
+    HashMap<ShipType,Integer> howManyOfPlayersShipTypeLeft;
 
-    // *** 11/25 NEW ***
-    // used to check how many squares remain of each shipType - used to check if ship is sunk so we can mark all coordinates as sunk
-    HashMap<ShipType,Integer> opponentShipTypeToNumSquaresUnhit;
-    HashMap<ShipType,Integer> playerShipTypeToNumSquaresUnhit;
+    // used to check how many squares remain of each shipType - used to check if ship is sunk so we can mark all coordinates as sunk and update render
+    HashMap<ShipType,Integer> opponentShipTypeToNumSquaresUnhit = new HashMap<>();
+    HashMap<ShipType,Integer> playerShipTypeToNumSquaresUnhit = new HashMap<>();
 
-    // keeps track of which coordinates each ship overlaps
-    HashMap <ShipType, Coordinate[]> opponentShipTypeToCoordinates;
-    HashMap <ShipType, Coordinate[]> playerShipTypeToCoordinates;
+    // keeps track of which coordinates each ship overlaps so we can lookup locations
+    HashMap <ShipType, Coordinate[]> opponentShipTypeToCoordinates = new HashMap<>();;
+    HashMap <ShipType, Coordinate[]> playerShipTypeToCoordinates = new HashMap<>();;
 
-
-    private ArrayList<AttackModeShip> playerBoardAttackShips = new ArrayList<AttackModeShip>();
-    private ArrayList<AttackModeShip> opponentBoardAttackShips = new ArrayList<AttackModeShip>();
+    // num of ships remaining - check if game is over
+    int numberPlayersUnsunkShips = 5;
+    int numberOpponentsUnsunkShips = 5;
 
     HashMap<ShipType, Integer> shipTypeToShipSizeMap;
 
@@ -62,7 +61,6 @@ public class Game {
         this.playerBoard = playerBoard;
         this.opponentBoard = opponentBoard;
 
-
         shipTypeToShipSizeMap = new HashMap<ShipType, Integer>();
         shipTypeToShipSizeMap.put(ShipType.AIRCRAFT_CARRIER, 5);
         shipTypeToShipSizeMap.put(ShipType.BATTLESHIP, 4);
@@ -70,12 +68,40 @@ public class Game {
         shipTypeToShipSizeMap.put(ShipType.SUBMARINE, 3);
         shipTypeToShipSizeMap.put(ShipType.PATROL_BOAT, 2);
 
-        opponentHowManyOfShipTypeLeft = new HashMap<ShipType, Integer>();
-        opponentHowManyOfShipTypeLeft.put(ShipType.AIRCRAFT_CARRIER, 1);
-        opponentHowManyOfShipTypeLeft.put(ShipType.BATTLESHIP, 1);
-        opponentHowManyOfShipTypeLeft.put(ShipType.DESTROYER, 1);
-        opponentHowManyOfShipTypeLeft.put(ShipType.SUBMARINE, 1);
-        opponentHowManyOfShipTypeLeft.put(ShipType.PATROL_BOAT, 1);
+        howManyOfPlayersShipTypeLeft = new HashMap<ShipType, Integer>();
+        howManyOfPlayersShipTypeLeft.put(ShipType.AIRCRAFT_CARRIER, 1);
+        howManyOfPlayersShipTypeLeft.put(ShipType.BATTLESHIP, 1);
+        howManyOfPlayersShipTypeLeft.put(ShipType.DESTROYER, 1);
+        howManyOfPlayersShipTypeLeft.put(ShipType.SUBMARINE, 1);
+        howManyOfPlayersShipTypeLeft.put(ShipType.PATROL_BOAT, 1);
+
+        opponentShipTypeToNumSquaresUnhit = new HashMap<ShipType, Integer>();
+        opponentShipTypeToNumSquaresUnhit.put(ShipType.AIRCRAFT_CARRIER, 5);
+        opponentShipTypeToNumSquaresUnhit.put(ShipType.BATTLESHIP, 4);
+        opponentShipTypeToNumSquaresUnhit.put(ShipType.DESTROYER, 3);
+        opponentShipTypeToNumSquaresUnhit.put(ShipType.SUBMARINE, 3);
+        opponentShipTypeToNumSquaresUnhit.put(ShipType.PATROL_BOAT, 2);
+
+        playerShipTypeToNumSquaresUnhit = new HashMap<ShipType, Integer>();
+        playerShipTypeToNumSquaresUnhit.put(ShipType.AIRCRAFT_CARRIER, 5);
+        playerShipTypeToNumSquaresUnhit.put(ShipType.BATTLESHIP, 4);
+        playerShipTypeToNumSquaresUnhit.put(ShipType.DESTROYER, 3);
+        playerShipTypeToNumSquaresUnhit.put(ShipType.SUBMARINE, 3);
+        playerShipTypeToNumSquaresUnhit.put(ShipType.PATROL_BOAT, 2);
+
+        playerShipTypeToCoordinates = new HashMap<ShipType, Coordinate[]>();
+        playerShipTypeToCoordinates.put(ShipType.AIRCRAFT_CARRIER, new Coordinate[5]);
+        playerShipTypeToCoordinates.put(ShipType.BATTLESHIP, new Coordinate[4]);
+        playerShipTypeToCoordinates.put(ShipType.DESTROYER, new Coordinate[3]);
+        playerShipTypeToCoordinates.put(ShipType.SUBMARINE, new Coordinate[3]);
+        playerShipTypeToCoordinates.put(ShipType.PATROL_BOAT, new Coordinate[2]);
+
+        opponentShipTypeToCoordinates = new HashMap<ShipType, Coordinate[]>();
+        opponentShipTypeToCoordinates.put(ShipType.AIRCRAFT_CARRIER, new Coordinate[5]);
+        opponentShipTypeToCoordinates.put(ShipType.BATTLESHIP, new Coordinate[4]);
+        opponentShipTypeToCoordinates.put(ShipType.DESTROYER, new Coordinate[3]);
+        opponentShipTypeToCoordinates.put(ShipType.SUBMARINE, new Coordinate[3]);
+        opponentShipTypeToCoordinates.put(ShipType.PATROL_BOAT, new Coordinate[2]);
     }
 
     public void start(ArrayList<Ship> playerShips) {
@@ -88,14 +114,14 @@ public class Game {
         stateOfOpponentBoard = new int[BOARD_ROWS][BOARD_COLUMNS];
         for (Ship s : playerShips) {
             AttackModeShip newShip = new AttackModeShip(s.getShipType(), 1, s.getOrientation(), s.getXCoordinate(), s.getYCoordinate());
-            opponentBoardAttackShips.add(newShip);
-            // place each ship on opponents state board and coord grid
+            // place each ship on opponents state board and coord grid and playerShipTypeToCoordinates
             if (newShip.getOrientation()==GamePanel.vertical) {
                 for (int i = 0; i < s.getShipSize(); i++) {
                     int x = newShip.getXCoordinate();
                     int y = newShip.getYCoordinate() + i;
                     stateOfOpponentBoard[x][y] = 1;
                     opponentCoordinateGrid[x][y] = new Coordinate(x, y, newShip.xPosition , newShip.yPosition + (i * newShip.SQUARE_SIZE), newShip, true);
+                    playerShipTypeToCoordinates.get(newShip.getShipType())[i] = opponentCoordinateGrid[x][y];
                 }
             }
             else {
@@ -104,6 +130,7 @@ public class Game {
                     int y = newShip.getYCoordinate();
                     stateOfOpponentBoard[x][y] = 1;
                     opponentCoordinateGrid[x][y] = new Coordinate(x, y, newShip.xPosition + (i * newShip.SQUARE_SIZE), newShip.yPosition, newShip, true);
+                    playerShipTypeToCoordinates.get(newShip.getShipType())[i] = opponentCoordinateGrid[x][y];
                 }
             }
         }
@@ -121,9 +148,6 @@ public class Game {
     public void placeOpponentShips() {
         // place the opponents ships randomly on the player's board
         stateOfPlayerBoard = new int[BOARD_ROWS][BOARD_COLUMNS];
-        // need to make sure its a valid position - in bounds and that it doesn't overlap
-
-        // queue for ships opponent needs to place
         Deque<Ship> shipsToBePlaced = new ArrayDeque<>();
         shipsToBePlaced.push(new Ship(ShipType.AIRCRAFT_CARRIER));
         shipsToBePlaced.push(new Ship(ShipType.BATTLESHIP));
@@ -136,7 +160,7 @@ public class Game {
             placeRandomShip(currentShip);
         }
 
-        // ******* after we placed ships in coordinate grid, fill null positions with non-ship containing coordinates ************
+        // after we place ships in coordinate grid, fill null positions with non-ship containing coordinates
         for (int j = 0; j < BOARD_COLUMNS; j++) {
             for (int k = 0; k < BOARD_ROWS; k++) {
                 if (playerCoordinateGrid[k][j] == null) {
@@ -164,16 +188,16 @@ public class Game {
                     for (int i = 0; i < s.getShipSize(); i++) {
                         stateOfPlayerBoard[xGuess][yGuess+i] = 1;
                         playerCoordinateGrid[xGuess][yGuess+i] = new Coordinate(xGuess, yGuess+i, xGuess*SQUARE_SIZE + PLAYER_BOARD_OFFSET_X, (yGuess+i)*SQUARE_SIZE + BOARD_OFFSET_Y, newShip, false);
+                        opponentShipTypeToCoordinates.get(newShip.getShipType())[i] = playerCoordinateGrid[xGuess][yGuess+i];
                     }
-                    playerBoardAttackShips.add(newShip);
                 }
                 else { // horizontal
                     newShip = new AttackModeShip(s.getShipType(), 0, GamePanel.horizontal, xGuess, yGuess);
                     for (int i = 0; i < s.getShipSize(); i++) {
                         stateOfPlayerBoard[xGuess+i][yGuess] = 1;
                         playerCoordinateGrid[xGuess+i][yGuess] = new Coordinate(xGuess+i, yGuess, (xGuess+i)*SQUARE_SIZE + PLAYER_BOARD_OFFSET_X, yGuess*SQUARE_SIZE + BOARD_OFFSET_Y, newShip, false);
+                        opponentShipTypeToCoordinates.get(newShip.getShipType())[i] = playerCoordinateGrid[xGuess+i][yGuess];
                     }
-                    playerBoardAttackShips.add(newShip);
                 }
                 shipPlaced = true;
             }
@@ -213,7 +237,6 @@ public class Game {
             }
             // check all spots are unoccupied
             for (int i = 0; i < size; i++) {
-//                System.out.println("horizontal: " + x + " + i: " + i + ", y: " + y);
                 if (boardSquaresOccupied[x+i][y] != 0) {
                     return false;
                 }
@@ -222,84 +245,119 @@ public class Game {
         return true;
     }
 
-    // we will return these arrays to be rendered on the front end
-    public int[][] getStateOfPlayerBoard() {
-        return stateOfPlayerBoard;
-    }
-    public int[][] getStateOfOpponentBoard() {
-        return stateOfOpponentBoard;
-    }
-
     public boolean isGuessValid(int xCoord, int yCoord) {
         // check x and y in bounds and square not checked already
         return (xCoord < BOARD_COLUMNS && xCoord >= 0 && yCoord < BOARD_ROWS && !playerCoordinateGrid[xCoord][yCoord].hasBeenChecked());
     }
 
-    /* params: x, y should already have been validated - player has not yet checked this coord and coord in bounds */
-    public void makePlayerTurn(int x, int y) {
-        // ** if we hit a ship - we must check to see if its been sunk - this will be difficult without knowing orientation or type of ship**
-        // maybe it would be good to maintain a grid of coordinates that say which ship occupies each square and which direction its in
-
+    /* params: x, y already have been validated; the player has not yet checked this coord and coord in bounds
+    *       returns false if game is over */
+    public boolean makePlayerTurn(int x, int y) {
         // hit previously unknown square that contains a ship
-        if (stateOfPlayerBoard[x][y] != 0) {
+        if (stateOfPlayerBoard[x][y] == 1) {
             // update state to show its been hit
             stateOfPlayerBoard[x][y] = 2;
-
-            // check if the ship is sunk
-            //      if so we need to update each of that ship's corresponding coordinates within playerCoordinateGrid to mark as containing sunk ship
-//            should we have overall counter for numShipsRemainingOpponent? or numSpacesLeftToHit and decrement it each time hit an opponents square?
-//            2 hashmap for each player to monitor state of game :
-//
-//              decrement this each time?
-//            1 containing ShipType -> (numCoordinatesLeftUnhit)
-                    // after decrementing check if numCoordinatesLeftUnhit == 0 => if so need to go through all coordinates an uppdate them in
-            // playerCoordinateGrid to mark as sunk
-
-            //             ShipType -> ArrayList of Coordinates (shows which coordinates it takes up)
-//            playerCoordinateGrid[x][y].getShip();
+            //check to see if whole ship has been sunk
+            ShipType typeOfShipHit = playerCoordinateGrid[x][y].getShip().shipType;
+            int numSquaresRemainingForShipHitBeforeHit = opponentShipTypeToNumSquaresUnhit.get(typeOfShipHit);
+            opponentShipTypeToNumSquaresUnhit.put(typeOfShipHit, numSquaresRemainingForShipHitBeforeHit-1);
+            // if 0 squares remain for that ship, we need to update it as sunk - update opponentHowManyOfEachShipTypeLeft
+            if (numSquaresRemainingForShipHitBeforeHit-1==0) {
+                // we need to set each coordinate overlapping ship as containing sunk ship so it will be drawn as dark red
+                setShipCoordinatesAsSunk(typeOfShipHit, 0);
+                // check if game over - if so player won
+                numberOpponentsUnsunkShips--;
+                if (numberOpponentsUnsunkShips==0) {
+                    return false;
+                }
+            }
         }
         playerCoordinateGrid[x][y].updateHasBeenChecked(); // update coordinate to show its hit
-
-
-
         // change turn
         playerTurn=1;
+        return true;
     }
 
-    /* this method makes the turn for the CPU - it chooses the next square to hit based on a heatmap of likely squares */
-    public void makeCPUTurn() {
+    /* this method makes the turn for the CPU - it chooses the next square to hit based on a heatmap of likely squares
+    *   returns false if game is over and no ships left to attack
+    * */
+    public boolean makeCPUTurn() {
         // choose next coordinate to attack
         Coordinate coordinateToAttack = getNextCoordinateToAttack();
-
-        //  *** if returns null none remain we need to end the game ***
-        if (coordinateToAttack==null) {
+        //  if returns null no ships remain we need to end the game ***
+        if (coordinateToAttack!=null) { // hit a square
+            opponentCoordinateGrid[coordinateToAttack.getX()][coordinateToAttack.getY()].updateHasBeenChecked();
+            playerTurn = 0;
+            // if we hit a ship:
+            if (opponentCoordinateGrid[coordinateToAttack.getX()][coordinateToAttack.getY()].containsShip()) {
+                ShipType typeOfShipHit = opponentCoordinateGrid[coordinateToAttack.getX()][coordinateToAttack.getY()].getShip().shipType;
+                int numSquaresRemainingForShipHitBeforeHit = playerShipTypeToNumSquaresUnhit.get(typeOfShipHit);
+                // decrement squares remaining for ship to be sunk
+                playerShipTypeToNumSquaresUnhit.put(typeOfShipHit, numSquaresRemainingForShipHitBeforeHit-1);
+                // if 0 squares remain for that ship, we need to update it as sunk
+                if (numSquaresRemainingForShipHitBeforeHit-1==0) {
+                    howManyOfPlayersShipTypeLeft.put(typeOfShipHit, 0);
+                    // we need to set each coordinate overlapping ship as containing sunk ship so it will render dark red
+                    setShipCoordinatesAsSunk(typeOfShipHit, 1);
+                    // check if game over - if so cpu won
+                    numberPlayersUnsunkShips--;
+                    if (numberPlayersUnsunkShips==0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        else { // end game
             isgameInProgress=false;
+            return false;
+        }
+    }
+
+    /*
+    lookup coordinates for a ship on specified board and mark all coords as sunk
+     params:
+        ShipType typeOfShipHit
+        playerOrOpponentBoard: tells which grid to mark on - 0 for opponents board 1 for players board
+     */
+    private void setShipCoordinatesAsSunk(ShipType typeOfShipHit, int playerOrOpponentBoard) {
+        if (playerOrOpponentBoard == 1){
+            // playing as CPU on opponent board
+            for (Coordinate coord : playerShipTypeToCoordinates.get(typeOfShipHit)) {
+                opponentCoordinateGrid[coord.getX()][coord.getY()].setContainsSunkShip();
+            }
         }
         else {
-            opponentCoordinateGrid[coordinateToAttack.getX()][coordinateToAttack.getY()].updateHasBeenChecked();
+            for (Coordinate coord : opponentShipTypeToCoordinates.get(typeOfShipHit)) {
+                playerCoordinateGrid[coord.getX()][coord.getY()].setContainsSunkShip();
+            }
         }
-        playerTurn = 0;
+
     }
 
     // returns null if no ships remain
     public Coordinate getNextCoordinateToAttack() {
         double[][] heatMap = makeHeatMap();
-        // iterate across heatmap and choose max ( ** LATER ADD TIE BREAKER **)
-        double maxProbability = 0;
-
-        // choose the coordinate with the max probability of a ship being placed there
-        // if theres a tie on probabilities, choose a random square thats not MISS or HIT or SUNK
-        Coordinate nextCoordinateToAttack = null;
-        for (int m = 0; m < BOARD_ROWS; m++) {
-            for (int n = 0; n < BOARD_COLUMNS; n++) {
-                double curr = heatMap[m][n];
-                if (curr >= maxProbability && !opponentCoordinateGrid[m][n].hasBeenChecked()) {
-                    maxProbability = curr;
-                    nextCoordinateToAttack = opponentCoordinateGrid[m][n];
+        if (heatMap!=null) {
+            // iterate across heatmap and choose max
+            double maxProbability = 0;
+            // choose the coordinate with the max probability of a ship being placed there
+            // if theres a tie on probabilities, choose a random square thats not MISS or HIT or SUNK
+            Coordinate nextCoordinateToAttack = null;
+            for (int m = 0; m < BOARD_ROWS; m++) {
+                for (int n = 0; n < BOARD_COLUMNS; n++) {
+                    double curr = heatMap[m][n];
+                    if (curr >= maxProbability && !opponentCoordinateGrid[m][n].hasBeenChecked()) {
+                        maxProbability = curr;
+                        nextCoordinateToAttack = opponentCoordinateGrid[m][n];
+                    }
                 }
             }
+            return nextCoordinateToAttack;
         }
-        return nextCoordinateToAttack;
+        else {
+            return null;
+        }
     }
 
     /* this method creates a heatmap for the current state of the board and remaining ships based on probabilities of ship configurations */
@@ -310,18 +368,17 @@ public class Game {
         double[][] cumulativeHeatMap = new double[BOARD_ROWS][BOARD_COLUMNS];
 
         /* make heatmap for each remaining shiptype on the opponents board */
-        for (ShipType shipType : opponentHowManyOfShipTypeLeft.keySet()) {
+        for (ShipType shipType : howManyOfPlayersShipTypeLeft.keySet()) {
 
-            int numLeft = opponentHowManyOfShipTypeLeft.get(shipType);
+            int numLeft = howManyOfPlayersShipTypeLeft.get(shipType);
             if (numLeft != 0) {
                 atLeastOneShipRemains = true;
                 Integer size = shipTypeToShipSizeMap.get(shipType);
                 size = size.intValue();
                 double[][] shipHeatMap = makeShipHeatMap(shipType);
-                // if numLeft more than 1 we need to add heatmap vals to the heatmap for every
-                // ship
+                // if numLeft more than 1 we need to add heatmap vals to the heatmap for every ship
                 if (numLeft > 1) {
-                    // ****************** */
+                    // *******************/
                     for (int i = 0; i < BOARD_ROWS; i++) {
                         for (int j = 0; j < BOARD_COLUMNS; j++) {
                             cumulativeHeatMap[i][j] += numLeft * shipHeatMap[i][j];
@@ -337,12 +394,10 @@ public class Game {
                 }
             }
         }
-
-        // *************************** if theres no ships left end the game ***************************
+        // * if theres no ships left return null and end game *
         if (!atLeastOneShipRemains) {
             return null;
         }
-
         return cumulativeHeatMap;
     }
 
@@ -353,8 +408,8 @@ public class Game {
         int totalNumConfigsForThisShipType = 0;
 
         boolean haveBiggerShipsBeenFound = false;
-        int num1 = opponentHowManyOfShipTypeLeft.get(ShipType.AIRCRAFT_CARRIER);
-        int num2 = opponentHowManyOfShipTypeLeft.get(ShipType.BATTLESHIP);
+        int num1 = howManyOfPlayersShipTypeLeft.get(ShipType.AIRCRAFT_CARRIER);
+        int num2 = howManyOfPlayersShipTypeLeft.get(ShipType.BATTLESHIP);
         if (num1 == 0 && num2 == 0) {
             haveBiggerShipsBeenFound = true;
         }
@@ -363,10 +418,8 @@ public class Game {
             for (int j = 0; j < BOARD_COLUMNS; j++) {
                 Coordinate coord = opponentCoordinateGrid[i][j];
 
-                // null means we haven't guessed the square yet - we need to check if this
-                // configuration vertically and horizonally works
-                // if its a MISS square or a SUNK (already discovered ship) do nothing
-                /****************************REWORK THIS SECTION - REFER TO ORIGINAL ****************************/
+                // null means we haven't guessed the square yet - we need to check if this configuration works vertically and horizonally
+                // if its a MISS square or a SUNK (already fully discovered ship) do nothing
                 if (!coord.hasBeenChecked() || (coord.hasBeenChecked() && coord.containsShip() && !coord.containsSunkShip()) ) {
 
                     // if we have a hit & a small ship, we should prioritize searching area around it
@@ -393,8 +446,7 @@ public class Game {
                             }
                         }
                     }
-
-                    // horizontal check the last square of a ship placement would be in bounds
+                    // horizontal check if the last square of a ship placement would be in bounds
                     if (checkIndexInBounds(i + shipTypeToShipSizeMap.get(s) - 1, j)) {
                         boolean foundSunkOrMiss = false;
                         for (int a = 0; a < shipTypeToShipSizeMap.get(s); a++) {
@@ -407,8 +459,7 @@ public class Game {
                             }
 
                         }
-                        // if all the squares are NOT SUNK and NOT MISS we can consider the
-                        // configuration and increment it for all of them besides ones already hit
+                        // if all the squares are NOT SUNK and NOT MISS we can consider the configuration and increment it for all of them besides ones already hit
                         if (!foundSunkOrMiss) {
                             for (int c = 0; c < shipTypeToShipSizeMap.get(s); c++) {
                                 Coordinate squareInPossShipConfig = opponentCoordinateGrid[i + c][j];
@@ -419,7 +470,6 @@ public class Game {
                             totalNumConfigsForThisShipType++;
                         }
                     }
-
                     // vertical check
                     if (checkIndexInBounds(i, j+ shipTypeToShipSizeMap.get(s) - 1)) {
                         boolean foundSunkOrMiss = false;
@@ -431,9 +481,7 @@ public class Game {
                                 break;
                             }
                         }
-
-                        // if all the squares are NOT SUNK and NOT MISS we can consider the
-                        // configuration and increment it for all of them besides ones already hit
+                        // if all the squares are NOT SUNK and NOT MISS we can consider the configuration and increment it for all of them besides ones already hit
                         if (!foundSunkOrMiss) {
                             for (int d = 0; d < shipTypeToShipSizeMap.get(s); d++) {
                                 Coordinate squareInPossShipConfig = opponentCoordinateGrid[i][j+d];
@@ -448,10 +496,7 @@ public class Game {
             }
         }
 
-        // we do need num of configs to calc prob at end
-        // iterate over heatMap, and for each cell, replace it with its value /
-        // numConfigs
-
+        // we use num of configs to calc probability; iterate over heatMap, and for each cell, replace it with its value / numConfigs
         if (totalNumConfigsForThisShipType != 0) {
             for (int y = 0; y < BOARD_ROWS; y++) {
                 for (int z = 0; z < BOARD_COLUMNS; z++) {
@@ -465,24 +510,13 @@ public class Game {
     public boolean checkIndexInBounds(int x, int y) {
         return (x<=BOARD_COLUMNS-1 && x>0 && y<=BOARD_ROWS-1 && y>0);
     }
-    public boolean checkIfShipSunk(int x, int y) {
-        AttackModeShip s = playerCoordinateGrid[x][y].getShip();
-        return s.decrementRemainingSquaresCount(); // if this returns true, we sunk ship
-    }
     public Coordinate[][] getPlayerCoordinateGrid() {
         return playerCoordinateGrid;
     }
     public Coordinate[][] getOpponentCoordinateGrid() {
         return opponentCoordinateGrid;
     }
-    public boolean isGameOver() {
-        return !isgameInProgress;
-    }
     public int getCurrentTurn() {
         return playerTurn;
-    }
-    // alternates playerTurn between 0 and 1
-    public void updateTurn() {
-        playerTurn = 1 - playerTurn;
     }
 }

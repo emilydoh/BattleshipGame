@@ -64,21 +64,8 @@ public class Coordinate {
         return hasBeenChecked;
     }
 
-    // returns true if we sunk a ship
-    public boolean updateHasBeenChecked() {
+    public void updateHasBeenChecked() {
         hasBeenChecked = true;
-        // check if we sunk a ship
-        if (containsShip) {
-            if (ship.decrementRemainingSquaresCount()) { // it sunk a ship
-                //************** WE NEED TO UPDATE THE REST OF THE COORDINATES AS SUNK **********
-                containsSunkShip = true;
-                return true;
-            }
-            else { // no ship was sunk
-                return false;
-            }
-        }
-        return false;
     }
 
     public void setContainsSunkShip() {
@@ -104,16 +91,16 @@ public class Coordinate {
     /* draw coordinate rectangle based on its current state:
         1) not yet checked -> draw nothing
         2) checked & contains ship ->
-            2a) ship sunk -> green
+            2a) ship sunk -> dark red
             2b) ship unsunk -> red
         3) checked & no ship -> darker gray
      */
     public void draw(Graphics2D g2) {
         // only draw if its the player's ship on the opponents board or an already checked coordinate on players board
         if (isThisPlayersShip) {
-            // i dont think this condition is ever met
+            // player's sunken ship
             if (containsSunkShip) {
-                g2.setColor(new Color(6, 14, 20));
+                g2.setColor(new Color(65, 0, 0));
             }
             else if (hasBeenChecked) {
                 g2.setColor(new Color(255, 0, 0));
@@ -126,18 +113,16 @@ public class Coordinate {
         else if (hasBeenChecked) {
             if (containsShip) {
                 if (containsSunkShip) {
-                   g2.setColor(new Color(0, 28, 0));
+                    g2.setColor(new Color(65, 0, 0));
                 }
                 else {
                     g2.setColor(new Color(255, 0, 0));
                 }
             }
             else {
-                g2.setColor(new Color(6, 14, 20));
+                g2.setColor(new Color(20, 20, 20));
             }
             g2.fillRect(xPosition, yPosition, SQUARE_SIZE, SQUARE_SIZE);
         }
-        // ****************** for debugging on our board uncomment this **************
-//        g2.fillRect(xPosition, yPosition, SQUARE_SIZE, SQUARE_SIZE);
     }
 }

@@ -23,6 +23,7 @@ public class GamePanel extends JPanel implements Runnable {
     public int gameStage;
     public final int placeShipsGameStage = 0;
     public final int attackGameStage = 1;
+    public final int gameOverStage = 2;
 
     public static final int vertical = 0;
     public static final int horizontal = 1;
@@ -61,6 +62,7 @@ public class GamePanel extends JPanel implements Runnable {
     // maintain references to these components so we can remove them from the panel when entering new phase
     private JTextArea instructionTextArea;
     private JPanel overlayPanel;
+    private JPanel boardsLabelsPanel;
 
     public GamePanel(JFrame window) {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -87,7 +89,7 @@ public class GamePanel extends JPanel implements Runnable {
         if (gameStage == placeShipsGameStage) {
             // set instruction area font, color, and layout
             JPanel instructionAndButtonsPanel = new JPanel(new BorderLayout());
-            instructionTextArea = new JTextArea(instructionBeginString + "PATROL_BOAT" + instructionEndString);
+            instructionTextArea = new JTextArea((instructionBeginString + "PATROL_BOAT" + instructionEndString));
 
             initializeFont();
             instructionTextArea.setFont(new Font(font, Font.PLAIN, 20));
@@ -133,7 +135,7 @@ public class GamePanel extends JPanel implements Runnable {
                     gameWindow.setLocationRelativeTo(null);
 
                     // add JLabels for each board and center above boards
-                    JPanel boardsLabelsPanel = new JPanel();
+                    boardsLabelsPanel = new JPanel();
                     // we put the 2 labels on a JPanel with a transparent background and use BorderLayout to place them on left and right
                     boardsLabelsPanel.setBackground(new Color(1, 1, 1, 0));
                     boardsLabelsPanel.setLayout(new BorderLayout());
@@ -142,14 +144,13 @@ public class GamePanel extends JPanel implements Runnable {
                     JLabel yourBoardLabel = new JLabel("Your Board");
                     yourBoardLabel.setFont(new Font(font, Font.BOLD, 32));
                     yourBoardLabel.setForeground(Color.WHITE);
-                    boardsLabelsPanel.add(yourBoardLabel, BorderLayout.WEST);
+                    boardsLabelsPanel.add(yourBoardLabel, BorderLayout.LINE_START);
                     JLabel opponentsBoardLabel = new JLabel("Opponent's board");
                     opponentsBoardLabel.setFont(new Font(font, Font.BOLD, 32));
                     opponentsBoardLabel.setForeground(Color.WHITE);
-                    boardsLabelsPanel.add(opponentsBoardLabel, BorderLayout.EAST);
+                    boardsLabelsPanel.add(opponentsBoardLabel, BorderLayout.LINE_END);
 
                     this.add(boardsLabelsPanel);
-
                     setBackground(Color.BLACK);
                 }
             });
@@ -159,7 +160,6 @@ public class GamePanel extends JPanel implements Runnable {
             buttonsPanel.add(placeButton);
             instructionAndButtonsPanel.add(buttonsPanel);
 
-            // ** 11/27 NEW FOR COLOR PICKING
             instructionAndButtonsPanel.setBackground(backgroundColor);
             instructionTextArea.setBackground(backgroundColor);
             buttonsPanel.setBackground(backgroundColor);
@@ -192,7 +192,6 @@ public class GamePanel extends JPanel implements Runnable {
     @Override
     public void run() {
         // game loop
-
         // convert to the interval of how often in nanoseconds we need to redraw the frame and update
         double drawInterval = 1000000000 / FPS;
         long lastTime = System.nanoTime();
@@ -218,7 +217,6 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void update() {
-
         // in place ships mode
         if (mouse.pressed && gameStage == placeShipsGameStage) {
             // map the x to the square its in, then set ship's coordinate to that
@@ -231,7 +229,6 @@ public class GamePanel extends JPanel implements Runnable {
                 currentlySelectedShip.changePosition(mouseXPosition - board.HALF_SQUARE_SIZE, mouseYPosition - board.HALF_SQUARE_SIZE);
             }
         }
-
         // in attack mode if its the users turn
         else if (mouse.pressed && gameStage==attackGameStage && playerTurn==0) {
             // ** map positions on player board to coordinates on grid **
@@ -239,18 +236,43 @@ public class GamePanel extends JPanel implements Runnable {
             int y = playerBoard.getYCoordFromPositionOnGrid(mouse.y);
 
             if (game.isGuessValid(x, y)) {
-                game.makePlayerTurn(x, y);
-                opponentCoordGrid = game.getOpponentCoordinateGrid();
-                playerCoordGrid = game.getPlayerCoordinateGrid();
+                // if makePlayerTurn returns false - game is over
+                if (game.makePlayerTurn(x, y)) {
+                    opponentCoordGrid = game.getOpponentCoordinateGrid();
+                    playerCoordGrid = game.getPlayerCoordinateGrid();
 
-                playerTurn = game.getCurrentTurn();
-                game.makeCPUTurn();
-                opponentCoordGrid = game.getOpponentCoordinateGrid();
-                playerCoordGrid = game.getPlayerCoordinateGrid();
-                playerTurn = game.getCurrentTurn();
+                    playerTurn = game.getCurrentTurn();
+                    // if returns false game is over
+                    if (game.makeCPUTurn()) {
+                        opponentCoordGrid = game.getOpponentCoordinateGrid();
+                        playerCoordGrid = game.getPlayerCoordinateGrid();
+                        playerTurn = game.getCurrentTurn();
+                    }
+                    else {
+                        // end game - opponent win
+                        gameStage=gameOverStage;
+                        JLabel winnerAnnouncementLabel = new JLabel("OPPONENT WINS");
+                        winnerAnnouncementLabel.setFont(new Font(font, Font.BOLD, 32));
+                        winnerAnnouncementLabel.setForeground(Color.RED);
+                        winnerAnnouncementLabel.setHorizontalAlignment(JLabel.CENTER);
+                        boardsLabelsPanel.add(winnerAnnouncementLabel, BorderLayout.CENTER);
+                        repaint();
+                        revalidate();
+                    }
+                }
+                // game is over - player win
+                else {
+                    gameStage = gameOverStage;
+                    JLabel winnerAnnouncementLabel = new JLabel("PLAYER WINS");
+                    winnerAnnouncementLabel.setFont(new Font(font, Font.BOLD, 32));
+                    winnerAnnouncementLabel.setForeground(Color.GREEN);
+                    winnerAnnouncementLabel.setHorizontalAlignment(JLabel.CENTER);
+                    boardsLabelsPanel.add(winnerAnnouncementLabel, BorderLayout.CENTER);
+                    repaint();
+                    revalidate();
+                }
             }
         }
-
     }
 
     /*
@@ -282,21 +304,18 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-
         //place ships stage
         if (gameStage == placeShipsGameStage) {
             board.draw(g2);
-
             for (Ship s : alreadyPlacedShips) {
                 s.draw(g2);
             }
         }
         // attack stage
-        else {
+        else if (gameStage == attackGameStage || gameStage == gameOverStage) {
             // display player and opponent boards
             playerBoard.draw(g2);
             opponentsBoard.draw(g2);
-
            // draw each coordinate based on the coordinate arrays
             //player board
             for (Coordinate[] row : game.getPlayerCoordinateGrid()) {
@@ -311,7 +330,6 @@ public class GamePanel extends JPanel implements Runnable {
                 }
             }
         }
-
     }
 
     public void setInitialShips() {

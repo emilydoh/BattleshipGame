@@ -13,10 +13,6 @@ public class Ship {
     public int xOffset;
     public int yOffset;
 
-    final int MAX_COLUMNS = 9;
-    final int MAX_ROWS = 9;
-
-
     // coordinate in array
     private int xCoordinate;
     private int yCoordinate;
@@ -28,11 +24,10 @@ public class Ship {
     // coordinates that comprise the ship (attack mode)
     Coordinate[] coordinateArray;
 
-
     // constructor for PlaceShipShip
     public Ship(ShipType shipType) {
         xOffset = 0;
-        // NEW 11/26 leaving space at the top for the instructions and buttons
+        // leaving space at the top for the instructions and buttons
         yOffset = 0;
         SQUARE_SIZE = 70;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
@@ -59,7 +54,6 @@ public class Ship {
         this.yPosition = getYPositionOnGrid(yCoordinate);
     }
 
-
     // constructor for AttackModeShips
     public Ship(ShipType shipType, int playerNum, int orientation, int xCoordinate, int yCoordinate) {
 
@@ -74,14 +68,13 @@ public class Ship {
         yOffset = 80;
         HALF_SQUARE_SIZE = SQUARE_SIZE/2;
 
-        // ~~~~~~~~~~~~~~~~~~~~~` *** test this *** ~~~~~~~~~~~~~~~~~~~~~
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         HashMap<ShipType, Integer> shipTypeToShipSizeMap = new HashMap<ShipType, Integer>();
         shipTypeToShipSizeMap.put(ShipType.AIRCRAFT_CARRIER, 5);
         shipTypeToShipSizeMap.put(ShipType.BATTLESHIP, 4);
         shipTypeToShipSizeMap.put(ShipType.DESTROYER, 3);
         shipTypeToShipSizeMap.put(ShipType.SUBMARINE, 3);
         shipTypeToShipSizeMap.put(ShipType.PATROL_BOAT, 2);
-
 
         this.shipType = shipType;
         this.shipSize = shipTypeToShipSizeMap.get(shipType);
@@ -133,7 +126,6 @@ public class Ship {
 
         this.xPosition = getXPositionOnGrid(xCoordinate);
         this.yPosition = getYPositionOnGrid(yCoordinate);
-
     }
 
     public int getXPositionOnGrid(int col) {
@@ -148,7 +140,6 @@ public class Ship {
         return (xPos + HALF_SQUARE_SIZE) / SQUARE_SIZE;
     }
 
-
     public int getYCoordFromPositionOnGrid(int yPos) {
         return (yPos + HALF_SQUARE_SIZE) / SQUARE_SIZE;
     }
@@ -161,10 +152,7 @@ public class Ship {
     }
 
     public void draw(Graphics2D g2) {
-        g2.setColor(new Color(6, 14, 20));
-
-//        System.out.print("plain ship draw ");
-
+        g2.setColor(new Color(20, 20, 20));
         if(orientation==GamePanel.vertical) {
             // params are x, y, width, height
             g2.fillRect(xPosition + xOffset, yPosition + yOffset, SQUARE_SIZE, shipSize*SQUARE_SIZE);
