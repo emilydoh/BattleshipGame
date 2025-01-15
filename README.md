@@ -15,7 +15,7 @@ git clone https://github.com/emilydoh/BattleshipGame.git
 ```
 
 ## Gameplay
-Drag and drop to place your ships. Once all ships are placed, you take turns with your opponent guessing squares to see if you've hit a ship! The first one to sink all their opponents ships wins.
+Drag and drop to place your ships. Once all ships are placed, you take turns with your opponent guessing squares to see if you've hit a ship. The first one to sink all their opponent's ships wins.
 
 ## Credits
 Referenced this article for creation of heatmap:
